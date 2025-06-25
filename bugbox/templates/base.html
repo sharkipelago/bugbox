@@ -1,24 +1,35 @@
+{% from 'bootstrap5/nav.html' import render_nav_item %}
+{% from 'bootstrap5/utils.html' import render_messages %}
 <!doctype html>
-<title>{% block title %}{% endblock %} - Flaskr</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<nav>
-  <h1>SUPER BASE</h1>
-  <ul>
-    {% if g.user %}
-      <li><span>{{ g.user['username'] }}</span>
-      <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
-    {% else %}
-      <li><a href="{{ url_for('auth.register') }}">Register</a>
-      <li><a href="{{ url_for('auth.login') }}">Log In</a>
-    {% endif %}
-  </ul>
-</nav>
-<section class="content">
-  <header>
-    {% block header %}{% endblock %}
-  </header>
-  {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
-  {% endfor %}
-  {% block content %}{% endblock %}
-</section>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}{% endblock %} - Bugbox</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {{ bootstrap.load_css() }}
+    {{ bootstrap.load_icon_font_css() }}
+</head>
+<body>
+	<nav>
+	<h1>SUPER BAS {{test_var}}</h1>
+	<ul>
+		{% if g.user %}
+		<li><span>{{ g.user['username'] }}</span>
+		<li><a href="{{ url_for('auth.logout') }}">Log Out</a>
+		{% else %}
+		<li><a href="{{ url_for('auth.register') }}">Register</a>
+		<li><a href="{{ url_for('auth.login') }}">Log In</a>
+		{% endif %}
+	</ul>
+	</nav>
+	<section class="content">
+		<header>
+			{% block header %}{% endblock %}
+		</header>
+		{% for message in get_flashed_messages() %}
+			<div class="flash">{{ message }}</div>
+		{% endfor %}
+		{% block content %}{% endblock %}
+	</section>
+    {{ bootstrap.load_js() }}
+</body>
