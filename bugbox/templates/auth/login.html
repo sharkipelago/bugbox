@@ -1,15 +1,16 @@
-{% extends 'base.html' %}
+{% extends 'auth/base.html' %}
 
-{% block header %}
-  <h1>{% block title %}Log In{% endblock %}</h1>
-{% endblock %}
+{% block title %}Login{% endblock %}
 
 {% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
-  </form>
-{% endblock %}
+<h1 class="h4 mb-4">Welcome Back!</h1>
+<form method="post">
+	{{ render_field(form.username, form_type='inline') }}
+	{{ render_field(form.password, form_type='inline') }}
+	{{ render_field(form.submit) }}
+</form>
+<hr>
+<a class="small" href="forgot-password">Forgot Password?</a>
+<br>
+<a class="small" href="register">Create an Account!</a>
+{% endblock content %}

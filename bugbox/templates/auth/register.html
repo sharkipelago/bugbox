@@ -1,15 +1,15 @@
-{% extends 'base.html' %}
+{% extends 'auth/base.html' %}
 
-{% block header %}
-  <h1>{% block title %}Register{% endblock %}</h1>
-{% endblock %}
+{% block title %}Register{% endblock %}
 
 {% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username">
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password">
-    <input type="submit" value="Register">
-  </form>
-{% endblock %}
+<h1 class="h4 mb-4">Create Account!</h1>
+<form method="post">
+	{{ render_field(form.username, form_type='inline') }}
+	{{ render_field(form.password, form_type='inline') }}
+	{{ render_field(form.confirm, form_type='inline') }}
+	{{ render_field(form.submit) }}
+</form>
+<hr>
+<a class="small" href="login">Already have an account?</a>
+{% endblock content %}

@@ -23,7 +23,7 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    app.config["BOOTSTRAP_BOOTSWATCH_THEME"] = 'quartz' #https://bootswatch.com/
+    app.config["BOOTSTRAP_BOOTSWATCH_THEME"] = 'sandstone' #https://bootswatch.com/
     Bootstrap5(app) # adds boostrap object https://bootstrap-flask.readthedocs.io/en/stable/basic/
     
     from . import db

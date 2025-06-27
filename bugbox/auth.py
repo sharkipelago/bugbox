@@ -1,17 +1,29 @@
 import functools
-
-from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
-)
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
+from wtforms import Form, StringField, PasswordField, SubmitField, validators
 
 from bugbox.db import get_db
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+class RegistrationForm(Form):
+    username = StringField(render_kw={"placeholder": "Username"})
+    password = PasswordField(render_kw={"placeholder": "Password"})
+    confirm = PasswordField(render_kw={"placeholder": "Confirm Password"})
+    submit = SubmitField(render_kw={"value": "Register"})
+
+class LoginForm(Form):
+    username = StringField(render_kw={"placeholder": "Username"})
+    password = PasswordField(render_kw={"placeholder": "Password"})
+    submit = SubmitField(render_kw={"value": "Login"})
+
+
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
-    if request.method == 'POST':
+    form = RegistrationForm(request.form)
+
+    if request.method == 'POST': #and form.validate():
         username = request.form['username']
         password = request.form['password']
         db = get_db()
@@ -29,6 +41,7 @@ def register():
                     (username, generate_password_hash(password)),
                 )
                 db.commit()
+                flash('Thanks for registering')
             except db.IntegrityError:
                 error = f"User {username} is already registered."
             else:
@@ -36,10 +49,11 @@ def register():
 
         flash(error)
 
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', form=form)
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
+    form = LoginForm(request.form)
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -61,7 +75,7 @@ def login():
 
         flash(error)
 
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', form=form)
 
 @bp.before_app_request
 def load_logged_in_user():

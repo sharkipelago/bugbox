@@ -9,6 +9,7 @@ from bugbox.db import get_db
 bp = Blueprint('blog', __name__)
 
 @bp.route('/')
+@login_required
 def index():
     db = get_db()
     posts = db.execute(
