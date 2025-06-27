@@ -41,7 +41,7 @@ def register():
                     (username, generate_password_hash(password)),
                 )
                 db.commit()
-                flash('Thanks for registering')
+                # flash('Thanks for registering')
             except db.IntegrityError:
                 error = f"User {username} is already registered."
             else:
