@@ -10,7 +10,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link href="https://cdn.lineicons.com/5.0/lineicons.css" rel="stylesheet" />
 
-		<title>{% block title %}{% endblock %} - Bugbox</title>
+		<title> {{self.title()}} - Bugbox</title>
 		{{ bootstrap.load_css() }}
 		{{ bootstrap.load_icon_font_css() }}
 	</head>
@@ -58,7 +58,7 @@
 			<!-- End of Mobile Sidebar -->
 
 			<!-- Desktop Sidebar -->
-			<div class="d-none d-md-block col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
+			<div class="d-none d-md-block col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
 				<div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
 					<a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
 						<span class="fs-5 d-none d-sm-inline">Bugbox</span>
@@ -66,7 +66,17 @@
 					<ul class="nav flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
 						<li class="nav-item">
 							<a href="#" class="nav-link align-middle px-0">
-								<i class="fs-4 bi-ticket-detailed"></i> <span class="ms-1 d-sm-inline">My Tickets</span>
+								<i class="fs-4 bi-info-circle-fill"></i> <span class="ms-1 d-sm-inline">About</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="{{ url_for('issue.create') }}" class="nav-link align-middle px-0">
+								<i class="fs-4 bi-plus-square"></i> <span class="ms-1 d-sm-inline">New Issue</span>
+							</a>
+						</li>
+						<li class="nav-item">
+							<a href="#" class="nav-link align-middle px-0">
+								<i class="fs-4 bi-ticket-detailed"></i> <span class="ms-1 d-sm-inline">My Issues</span>
 							</a>
 						</li>
 						<li class="nav-item">
@@ -96,9 +106,9 @@
 			<!-- End of Desktop Sidebar -->
 
 			<!-- Main Content -->
-			<div id="content-wrapper" class="col-auto d-flex flex-column">
+			<div class="col-auto flex-grow-1 d-flex flex-column px-0">
 				<!-- Topbar -->
-				<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+				<nav class="navbar navbar-expand mb-4 static-top shadow">
 
 					<!-- Sidebar Toggle (Topbar) -->
 					<button id="sidebarToggleTop" data-bs-toggle="offcanvas" data-bs-target="#mobile-sidebar" class="btn btn-link d-md-none mr-3">
@@ -106,17 +116,13 @@
 					</button>
 
 					<!-- Topbar Search -->
-					<h1>test</h1>
-					<form
-						class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+					<form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 ms-4">
 						<div class="input-group">
 							<input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-								aria-label="Search" aria-describedby="basic-addon2">
-							<div class="input-group-append">
-								<button class="btn btn-primary" type="button">
-									<i class="fas fa-search fa-sm"></i>
-								</button>
-							</div>
+								aria-label="Search">	
+							<button class="btn btn-primary" type="button">
+								<i class="bi-search"></i>
+							</button>
 						</div>
 					</form>
 
@@ -307,7 +313,7 @@
 
 					<!-- Page Heading -->
 					<div class="d-sm-flex align-items-center justify-content-between mb-4">
-						{% block header %}{% endblock %}
+						{{self.header()}}
 					</div>
 					
 					{% for message in get_flashed_messages() %}
@@ -319,24 +325,24 @@
 					</div>
 					{% endfor %}
 
-					{% block content %}{% endblock %}
+					{{ self.content() }}
 				</div>
 
 
 				<!-- /.container-fluid -->
 
+				<!-- Footer -->
+				<footer class="sticky-footer bg-white">
+					<div class="container my-auto">
+						<div class="copyright text-center my-auto">
+							<span>Copyright &copy; Your Website 2025</span>
+						</div>
+					</div>
+				</footer>
+				<!-- End of Footer -->
 			</div>
 			<!-- End of Main Content -->
 
-			<!-- Footer -->
-			<footer class="sticky-footer bg-white">
-				<div class="container my-auto">
-					<div class="copyright text-center my-auto">
-						<span>Copyright &copy; Your Website 2021</span>
-					</div>
-				</div>
-			</footer>
-			<!-- End of Footer -->
 
 		</div>
 		<!-- End of Page Wrapper -->

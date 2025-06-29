@@ -32,8 +32,8 @@ def create_app(test_config=None):
     from . import auth
     app.register_blueprint(auth.bp)
 
-    from . import dash
-    app.register_blueprint(dash.bp)
+    from . import issue
+    app.register_blueprint(issue.bp)
     app.add_url_rule('/', endpoint='index')
     
     return app

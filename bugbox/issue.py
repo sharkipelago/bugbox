@@ -4,7 +4,7 @@ from werkzeug.exceptions import abort
 from bugbox.auth import login_required
 from bugbox.db import get_db
 
-bp = Blueprint('dash', __name__)
+bp = Blueprint('issue', __name__)
 
 @bp.route('/')
 @login_required
@@ -15,7 +15,7 @@ def index():
         ' FROM post p JOIN user u ON p.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
-    return render_template('dash/index.html', posts=posts)
+    return render_template('issue/index.html', posts=posts)
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -38,9 +38,9 @@ def create():
                 (title, body, g.user['id'])
             )
             db.commit()
-            return redirect(url_for('dash.index'))
+            return redirect(url_for('issue.index'))
 
-    return render_template('dash/create.html')
+    return render_template('issue/create.html')
 
 def get_post(id, check_author=True):
     post = get_db().execute(
@@ -81,8 +81,8 @@ def update(id):
                 (title, body, id)
             )
             db.commit()
-            return redirect(url_for('dash.index'))
-    return render_template('dash/update.html', post=post)
+            return redirect(url_for('issue.index'))
+    return render_template('issue/update.html', post=post)
 
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
@@ -91,4 +91,4 @@ def delete(id):
     db = get_db()
     db.execute('DELETE FROM post WHERE id = ?', (id,))
     db.commit()
-    return redirect(url_for('dash.index'))
+    return redirect(url_for('issue.index'))
