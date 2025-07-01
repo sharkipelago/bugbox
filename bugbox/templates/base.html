@@ -80,8 +80,8 @@
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="#" class="nav-link align-middle px-0">
-								<i class="fs-4 bi-people-fill"></i> <span class="ms-1 d-none d-sm-inline">Manage Users</span>
+							<a href="{{ url_for('collab.index')}}" class="nav-link align-middle px-0">
+								<i class="fs-4 bi-people-fill"></i> <span class="ms-1 d-none d-sm-inline">View Collaborators</span>
 							</a>
 						</li>
 					</ul>
@@ -316,7 +316,7 @@
 
 					<!-- Page Heading -->
 					<div class="d-sm-flex align-items-center justify-content-between mb-4">
-						{{self.header()}}
+						<h1>{{ self.title() }}</h1> {% block header %} {% endblock %}
 					</div>
 					
 					{% for message in get_flashed_messages() %}

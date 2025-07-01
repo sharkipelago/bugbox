@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Collaborators{% endblock %}
+
+{% block content %}
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Users</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{user["first_name"]}} {{user["last_name"]}}</td>
+                                <td>
+                                    {% if user["admin_level"] == 2 %}
+                                        <b>Admin</b>
+                                    {% elif user["admin_level"] == 1 %}
+                                        Supervisor
+                                    {% else %}
+                                        User
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user["admin_level"] == 0 %}
+                                        <a href="#" data-action="{{ url_for('admin.promote', id=user['id'], direction=1) }}" data-toggle="modal" data-target="#userModal" class="btn-success d-none d-sm-inline-block btn btn-sm shadow-sm">
+                                            Promote User</a>
+                                    {% elif user["admin_level"] == 1 %} 
+                                        <a href="#" data-action="{{ url_for('admin.promote', id=user['id'], direction=0) }}" data-toggle="modal" data-target="#userModal" class="btn-warning d-none d-sm-inline-block btn btn-sm shadow-sm">
+                                            Demote User</a>
+                                    {% endif %}  
+        
+                                    {% if user['id'] == g.user.id %}
+                                        <div class="btn-secondary btn btn-sm shadow-sm" style="pointer-events: none;">
+                                            Self</div>                                    
+                                    {% elif user["admin_level"] != 2 %}
+                                        <a href="#" class="btn-primary btn btn-sm shadow-sm">
+                                            Message User</a>
+                                    {% endif %}  
+                                </td>
+
+                            </tr>
+                            <tr>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

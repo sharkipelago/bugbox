@@ -23,7 +23,12 @@
 								<div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
 								<div class="col-lg-6">
 									<div class="text-center p-5">
-										{% for message in get_flashed_messages() %}
+										{% for message in get_flashed_messages(category_filter=['success']) %}
+										<div class="alert alert-success py-2">
+											{{message}}
+										</div>
+										{% endfor %}
+										{% for message in get_flashed_messages(category_filter=['message']) %}
 										<div class="alert alert-warning py-2">
 											 {{render_icon("exclamation-triangle-fill")}} {{message}}
 										</div>

@@ -36,4 +36,7 @@ def create_app(test_config=None):
     app.register_blueprint(issue.bp)
     app.add_url_rule('/', endpoint='index')
     
+    from . import collab
+    app.register_blueprint(collab.bp)
+
     return app

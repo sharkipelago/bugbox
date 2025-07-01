@@ -5,6 +5,10 @@
 {% block content %}
 <h1 class="h3 my-4">Create Account!</h1>
 <form method="post">
+	<div class="form-group row">
+		<div class="col-sm-6"> {{ render_field(form.first_name, form_type='inline') }} </div>
+		<div class="col-sm-6"> {{ render_field(form.last_name, form_type='inline') }} </div>
+	</div>
 	{{ render_field(form.username, form_type='inline') }}
 	{{ render_field(form.password, form_type='inline') }}
 	{{ render_field(form.confirm, form_type='inline') }}

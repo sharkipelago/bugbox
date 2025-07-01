@@ -8,6 +8,8 @@ from bugbox.db import get_db
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 class RegistrationForm(Form):
+    first_name = StringField(render_kw={"placeholder": "First Name"})
+    last_name = StringField(render_kw={"placeholder": "Last Name"})
     username = StringField(render_kw={"placeholder": "Username"})
     password = PasswordField(render_kw={"placeholder": "Password"})
     confirm = PasswordField(render_kw={"placeholder": "Confirm Password"})
@@ -24,24 +26,34 @@ def register():
     form = RegistrationForm(request.form)
 
     if request.method == 'POST': #and form.validate():
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
         username = request.form['username']
         password = request.form['password']
+        confirm = request.form['confirm']
         db = get_db()
         error = None
 
+        if not first_name or not last_name:
+            error = 'First name and last name are required'
         if not username:
-            error = 'Username is required.'
+            error = 'Username is required'
         elif not password:
-            error = 'Password is required.'
-
+            error = 'Password is required'
+        elif len(password) < 8:
+            error = 'Password is must be at least 8 characters long'
+        elif not confirm:
+            error = 'Password confirmation is required'
+        elif password != confirm:
+            error = 'Passwords do not match'
         if error is None:
             try:
                 db.execute(
-                    "INSERT INTO user (username, password) VALUES (?, ?)",
-                    (username, generate_password_hash(password)),
+                    "INSERT INTO user (username, password, first_name, last_name) VALUES (?, ?, ?, ?)",
+                    (username, generate_password_hash(password), first_name, last_name),
                 )
                 db.commit()
-                # flash('Thanks for registering')
+                flash('Thanks for registering!', 'success')
             except db.IntegrityError:
                 error = f"User {username} is already registered."
             else:
@@ -64,9 +76,9 @@ def login():
         ).fetchone()
 
         if user is None:
-            error = 'Incorrect username.'
+            error = 'Username not found'
         elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
+            error = 'Incorrect password'
 
         if error is None:
             session.clear()

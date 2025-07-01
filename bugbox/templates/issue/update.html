@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 
-{% block header %}
-  <h1>{% block title %}Edit "{{ post['title'] }}"{% endblock %}</h1>
-{% endblock %}
+{% block title %}Edit "{{ post['title'] }}"{% endblock %}
 
 {% block content %}
   <form method="post">
