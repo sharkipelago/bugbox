@@ -33,20 +33,10 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if user["admin_level"] == 0 %}
-                                        <a href="#" data-action="{{ url_for('admin.promote', id=user['id'], direction=1) }}" data-toggle="modal" data-target="#userModal" class="btn-success d-none d-sm-inline-block btn btn-sm shadow-sm">
-                                            Promote User</a>
-                                    {% elif user["admin_level"] == 1 %} 
-                                        <a href="#" data-action="{{ url_for('admin.promote', id=user['id'], direction=0) }}" data-toggle="modal" data-target="#userModal" class="btn-warning d-none d-sm-inline-block btn btn-sm shadow-sm">
-                                            Demote User</a>
-                                    {% endif %}  
-        
                                     {% if user['id'] == g.user.id %}
-                                        <div class="btn-secondary btn btn-sm shadow-sm" style="pointer-events: none;">
-                                            Self</div>                                    
-                                    {% elif user["admin_level"] != 2 %}
-                                        <a href="#" class="btn-primary btn btn-sm shadow-sm">
-                                            Message User</a>
+										<span class="badge text-bg-secondary shadow-sm">Self</span>
+                                    {% elif user["admin_level"] == 2 %}
+                                        <span href="#" class="badge text-bg-admin shadow-sm">Admin</span>
                                     {% endif %}  
                                 </td>
 

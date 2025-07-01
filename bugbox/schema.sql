@@ -6,7 +6,8 @@ CREATE TABLE user (
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
   first_name TEXT NOT NULL,
-  last_name TEXT NOT NULL
+  last_name TEXT NOT NULL,
+  admin_level INTEGER NOT NULL
 );
 
 CREATE TABLE post (

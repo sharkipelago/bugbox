@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from werkzeug.security import generate_password_hash
 
 import click
 from flask import current_app, g
@@ -27,6 +28,16 @@ def init_db():
 
     with current_app.open_resource('schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
+
+    default_admin = ("md", generate_password_hash("mooodeng"), "Moo", "Deng", 2) 
+    default_team_lead = ("puxp", generate_password_hash("punxsutawney"), "Punxsutawney", "Phil", 1)
+    default_user = ("hachi", generate_password_hash("hachikoko"), "Chūken", "Hachikō", 0)
+    defaults_users = [default_admin, default_team_lead, default_user]
+    db.executemany(
+        "INSERT INTO user (username, password, first_name, last_name, admin_level) VALUES (?, ?, ?, ?, ?)",
+        defaults_users,
+    )
+    db.commit()
 
 
 @click.command('init-db')
