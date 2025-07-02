@@ -35,8 +35,9 @@
                                 <td>
                                     {% if user['id'] == g.user.id %}
 										<span class="badge text-bg-secondary shadow-sm">Self</span>
-                                    {% elif user["admin_level"] == 2 %}
-                                        <span href="#" class="badge text-bg-admin shadow-sm">Admin</span>
+                                    {% endif %}
+                                    {% if user["admin_level"] == 2 %}
+                                        <span class="badge text-dark text-bg-admin shadow-sm">Admin</span>
                                     {% endif %}  
                                 </td>
 

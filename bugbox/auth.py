@@ -89,6 +89,13 @@ def login():
 
     return render_template('auth/login.html', form=form)
 
+# used to allow people looking at the sight to view the sight from admin perspective
+@bp.route('/admin-login')
+def guest_admin_login():
+    session.clear()
+    session['user_id'] = 1
+    return redirect(url_for('index'))
+
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
