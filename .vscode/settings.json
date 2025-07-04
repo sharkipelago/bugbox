@@ -1,0 +1,12 @@
+{
+  "[python]": {
+  "editor.detectIndentation" : false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 4
+  },
+  "[html]": {
+    "editor.detectIndentation" : false,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  }  
+}
