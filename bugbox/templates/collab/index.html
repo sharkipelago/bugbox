@@ -4,53 +4,46 @@
 
 {% block content %}
 
-    <!-- DataTales Example -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Users</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in users %}
-                            <tr>
-                                <td>{{user["first_name"]}} {{user["last_name"]}}</td>
-                                <td>
-                                    {% if user["admin_level"] == 2 %}
-                                        <b>Admin</b>
-                                    {% elif user["admin_level"] == 1 %}
-                                        Supervisor
-                                    {% else %}
-                                        User
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if user['id'] == g.user.id %}
-										<span class="badge text-bg-secondary shadow-sm">Self</span>
-                                    {% endif %}
-                                    {% if user["admin_level"] == 2 %}
-                                        <span class="badge text-dark text-bg-admin shadow-sm">Admin</span>
-                                    {% endif %}  
-                                </td>
-
-                            </tr>
-                            <tr>
-
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Users</h6>
     </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Team</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td>{{user["first_name"]}} {{user["last_name"]}}</td>
+                <td>
+                  {% if user["admin_level"] < 2 %}
+                    {{user["team_name"]}}</td>
+                  {% endif %}
+                <td>
+                  {% if user['id'] == g.user.id %}
+                    <span class="badge text-bg-secondary shadow-sm">Self</span>
+                  {% endif %}
+                  {% if user["admin_level"] == 2 %}
+                    <span class="badge text-dark text-bg-admin shadow-sm">Admin</span>
+                  {% elif user["admin_level"] == 1 %}
+                    <span class="badge text-dark ext-bg-team-lead shadow-sm">Team Lead</span>
+                  {% endif %}  
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
 {% endblock %}
 

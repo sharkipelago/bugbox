@@ -5,6 +5,25 @@ from werkzeug.security import generate_password_hash
 import click
 from flask import current_app, g
 
+teams = {
+    "Unassigned": -1,
+    "Frontend": 0,
+    "Backend": 1,
+    "Mobile": 2,
+    "QA": 3,
+    "DevOps": 4
+}
+
+DEFAULT_USERS = [
+    # Admin
+    ("md", generate_password_hash("mooodeng"), "Moo", "Deng", 2, None), 
+    # Team Lead
+    ("puxp", generate_password_hash("punxsutawney"), "Punxsutawney", "Phil", 1, teams["Mobile"]),
+    # User
+    ("hachi", generate_password_hash("hachikoko"), "Chūken", "Hachikō", 0, teams["Backend"]),
+    ("harambe", generate_password_hash("rememberharambe"), "Harambe", "Van Coppenolle", 0, teams["Mobile"]),
+    ("laika", generate_password_hash("laikaspaceneighbor"), "Laika", " Kudryavka", 0, teams["QA"])
+]
 
 def get_db():
     if 'db' not in g:
@@ -29,13 +48,15 @@ def init_db():
     with current_app.open_resource('schema.sql') as f:
         db.executescript(f.read().decode('utf8'))
 
-    default_admin = ("md", generate_password_hash("mooodeng"), "Moo", "Deng", 2) 
-    default_team_lead = ("puxp", generate_password_hash("punxsutawney"), "Punxsutawney", "Phil", 1)
-    default_user = ("hachi", generate_password_hash("hachikoko"), "Chūken", "Hachikō", 0)
-    defaults_users = [default_admin, default_team_lead, default_user]
     db.executemany(
-        "INSERT INTO user (username, password, first_name, last_name, admin_level) VALUES (?, ?, ?, ?, ?)",
-        defaults_users,
+        "INSERT INTO team (id, team_name) VALUES (?, ?)",
+        [(id, name) for (name, id) in teams.items()],
+    )
+    db.commit()
+
+    db.executemany(
+        "INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id) VALUES (?, ?, ?, ?, ?, ?)",
+        DEFAULT_USERS,
     )
     db.commit()
 

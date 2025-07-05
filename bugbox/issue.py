@@ -18,13 +18,19 @@ def index():
     ).fetchall()
 
     # db.execute returns generator
-    assignments = list(db.execute(
+    assignments = db.execute(
         'SELECT a.id, issue_id, assignee_id, (first_name || " " || last_name) as assignee_name'
         ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
-    ))
+    ).fetchall()
+
+    issue_teams = db.execute(
+        'SELECT issue_id, team_name FROM issue_team i_t JOIN team t ON i_t.team_id = t.id'
+    ).fetchall()
     
-    print(assignments)
-    return render_template('issue/index.html', issues=issues, assignments=assignments)
+
+    print(issue_teams[0].keys())
+
+    return render_template('issue/index.html', issues=issues, assignments=assignments, issue_teams=issue_teams)
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -47,11 +53,17 @@ def create():
                 ' VALUES (?, ?, ?)',
                 (title, body, g.user['id'])
             )
+            issue_id = cursor.lastrowid
+            cursor.execute(
+                'INSERT INTO issue_team (issue_id, team_id)'
+                ' VALUES (?, ?)',
+                (issue_id, g.user['team_id'])
+            )
             if 'self-assign' in request.form:
                 cursor.execute(
                     'INSERT INTO assignment (issue_id, assignee_id)'
                     ' VALUES (?, ?)',
-                    (cursor.lastrowid, g.user['id'])
+                    (issue_id, g.user['id'])
                 )
             db.commit()
             return redirect(url_for('issue.index'))

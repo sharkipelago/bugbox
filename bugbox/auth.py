@@ -48,9 +48,10 @@ def register():
             error = 'Passwords do not match'
         if error is None:
             try:
+                # By default new registered users will join team unassigned
                 db.execute(
-                    "INSERT INTO user (username, password, first_name, last_name, admin_level) VALUES (?, ?, ?, ?, ?)",
-                    (username, generate_password_hash(password), first_name, last_name, 0),
+                    "INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id) VALUES (?, ?, ?, ?, ?, ?)",
+                    (username, generate_password_hash(password), first_name, last_name, 0, -1),
                 )
                 db.commit()
                 flash('Thanks for registering!', 'success')
