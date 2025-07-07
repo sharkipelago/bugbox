@@ -1,19 +1,41 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit "{{ post['title'] }}"{% endblock %}
+{% block title %}Edit "{{ issue['title'] }}"{% endblock %}
 
 {% block content %}
-  <form method="post">
-    <label for="title">Title</label>
-    <input name="title" id="title"
-      value="{{ request.form['title'] or post['title'] }}" required autofocus>
-    <label for="body">Body</label>
-    <textarea name="body" id="body">{{ request.form['body'] or post['body'] }}</textarea>
-    <input type="submit" value="Save">
-  </form>
-  <hr>
-  <form action="{{ url_for('issue.delete', id=post['id']) }}" method="post">
-    <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
-  </form>
+  <div class="row">
+    <div class="col flex-grow-1">
+      <form id="update-form" method="post">
+        <label for="title" class="form-label">Title</label>
+        <input name="title" id="title" class="form-control" value="{{ request.form['title'] or issue['title'] }}" required autofocus>
+        <label for="body" class="form-label">Body</label>
+        <textarea name="body" id="body" class="form-control mb-2">{{ request.form['body'] or issue['body'] }}</textarea>
+      </form>
+      <form id="delete-form" action="{{ url_for('issue.delete', id=issue['id']) }}" method="post"></form>
+      <input type="submit" value="Save" class="btn btn-primary" form="update-form"/>
+      <input class="btn btn-danger " type="submit" value="Delete" form="delete-form" onclick="return confirm('Are you sure?');">
+    </div>
+    <div class="col-3">
+      <h4 class="me-2">Assignees
+        {% if g.user['admin_level'] == 1 and g.user['team_id'] == issue['team_id'] %}
+          <span class="btn btn-info btn-sm" data-bs-toggle="collapse" data-bs-target="#updateUserCollapse" aria-expanded="false">Add</span>
+        {% endif %}
+      </h4>    
+      <div class="collapse" id="updateUserCollapse">
+        <ul class="list-group">
+          {% for user in users | selectattr('team_id', 'equalto', issue['team_id']) | rejectattr('id', 'in', assignees|map(attribute='id')) %}
+            <a class="list-group-item list-group-item-action" href="{{ url_for('issue.add_assignee', issue_id=issue['id'], user_id=user['id']) }}">{{user['first_name']}} {{user['last_name']}}</a>
+          {% else %}
+            <li class="list-group-item ">No more assignable users</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <hr>
+      {% for a in assignees %}
+        <a class="list-group-item " href="{{ url_for('issue.remove_assignee', issue_id=issue['id'], assignee_id=a['id']) }}">
+          {{ a['name'] }}<i class="bi bi-x list-group-item-action"></i></a>
+      {% endfor %}
+    </div>
+  </div>
 {% endblock %}
   

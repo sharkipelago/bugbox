@@ -1,5 +1,7 @@
 import sqlite3
 from datetime import datetime
+from collections import defaultdict
+
 from werkzeug.security import generate_password_hash
 
 import click
@@ -75,3 +77,37 @@ sqlite3.register_converter(
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+
+def get_user(user_id):
+    return get_db().execute(
+        'SELECT *'
+        ' FROM user u'
+        ' WHERE u.id = ?',
+        (user_id,)
+    ).fetchone()  
+
+def get_users():
+    return get_db().execute(
+        'SELECT *'
+        ' FROM user u LEFT JOIN team t ON u.team_id = t.id'
+    ).fetchall()
+
+def get_issue_teams():
+    issue_teams_query = get_db().execute(
+        'SELECT *' 
+        ' FROM issue_team i_t'
+    ).fetchall()
+    # print(issue_teams_query[0]['issue_id'])
+    issue_teams = defaultdict(set)
+    for i_t in issue_teams_query:
+        issue_teams[i_t['issue_id']].add(i_t['team_id'])
+    return issue_teams
+
+def get_assignees(issue_id):
+    assignee_query = get_db().execute(
+        'SELECT a.assignee_id, (u.first_name || " " || u.last_name) as assignee_name'
+        ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
+        ' WHERE a.issue_id = ?',
+        (issue_id,)
+    ).fetchall()
+    return [{'id': a['assignee_id'], 'name': a['assignee_name'] } for a in assignee_query]

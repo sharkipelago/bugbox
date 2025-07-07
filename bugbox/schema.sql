@@ -28,6 +28,7 @@ CREATE TABLE assignment (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	issue_id INTEGER NOT NULL,
 	assignee_id INTEGER NOT NULL,
+	CONSTRAINT issue_assignee_constraint UNIQUE (issue_id, assignee_id),
 	FOREIGN KEY (issue_id) REFERENCES issue (id),
 	FOREIGN KEY (assignee_id) REFERENCES user (id)
 );
@@ -41,6 +42,7 @@ CREATE TABLE issue_team (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	issue_id INTEGER NOT NULL NULL,
 	team_id INTEGER,
+	CONSTRAINT issue_team UNIQUE (issue_id, team_id),
 	FOREIGN KEY (issue_id) REFERENCES issue (id),
 	FOREIGN KEY (team_id) REFERENCES user (id)
 );

@@ -8,11 +8,11 @@
     <article>
       <header>
         <div>
-          <h1>{{ issue['title'] }} | {% for i_t in issue_teams %} {% if i_t['issue_id'] == issue['id'] %} {{i_t['team_name']}} {% endif %}{% endfor %} </h1>
+          <h1>{{ issue['title'] }} | {% for team in issue_teams[issue['id']] %} {{team}} {% endfor %} </h1>
           <div class="about">by {{ issue['author_name'] }} on {{ issue['created'].strftime('%Y-%m-%d') }}</div>
         </div>
-        {% if g.user['id'] == issue['author_id'] %}
-          <a class="action" href="{{ url_for('issue.update', id=issue['id']) }}">Edit</a>
+        {% if g.user['id'] == issue['author_id'] or (g.user['admin_level'] == 1 and issue['team_id'] == g.user['team_id']) %}
+          <a class="action" href="{{ url_for('issue.update', issue_id=issue['id']) }}">Edit</a>
         {% endif %}
       </header>
       <p class="body">{{ issue['body'] }}</p>

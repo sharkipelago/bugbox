@@ -122,3 +122,14 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+# TODO move this to an admin.py
+def team_lead_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user["admin_level"] < 1:
+            return redirect(url_for('admin.denied'))
+
+        return view(**kwargs)
+
+    return wrapped_view

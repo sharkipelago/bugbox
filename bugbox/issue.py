@@ -1,36 +1,43 @@
+from collections import defaultdict
+
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
 
-from bugbox.auth import login_required
-from bugbox.db import get_db
+from bugbox.auth import login_required, team_lead_required
+from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees
 
 bp = Blueprint('issue', __name__)
+
+
+def get_assignments():
+    return get_db().execute(
+        'SELECT a.id, issue_id, assignee_id, (first_name || " " || last_name) as assignee_name'
+        ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
+    ).fetchall()
+
+# Only executes not resposible for committing or anything
+def insert_assignment(cursor, issue_id, assignee_id):
+    cursor.execute(
+        'INSERT INTO assignment (issue_id, assignee_id)'
+        ' VALUES (?, ?)',
+        (issue_id, assignee_id)
+    )
+
+def delete_assignment(cursor, issue_id, assignee_id):
+    cursor.execute('DELETE FROM assignment WHERE issue_id = ? AND assignee_id = ?', (issue_id, assignee_id))
 
 @bp.route('/')
 @login_required
 def index():
     db = get_db()
     issues = db.execute(
-        'SELECT i.id, title, body, created, author_id, (first_name || " " || last_name) AS author_name'
+        'SELECT i.id, title, body, created, author_id, (first_name || " " || last_name) AS author_name, team_id'
         ' FROM issue i'
         ' JOIN user u ON i.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
 
-    # db.execute returns generator
-    assignments = db.execute(
-        'SELECT a.id, issue_id, assignee_id, (first_name || " " || last_name) as assignee_name'
-        ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
-    ).fetchall()
-
-    issue_teams = db.execute(
-        'SELECT issue_id, team_name FROM issue_team i_t JOIN team t ON i_t.team_id = t.id'
-    ).fetchall()
-    
-
-    print(issue_teams[0].keys())
-
-    return render_template('issue/index.html', issues=issues, assignments=assignments, issue_teams=issue_teams)
+    return render_template('issue/index.html', issues=issues, assignments=get_assignments(), issue_teams=get_issue_teams())
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
@@ -60,11 +67,7 @@ def create():
                 (issue_id, g.user['team_id'])
             )
             if 'self-assign' in request.form:
-                cursor.execute(
-                    'INSERT INTO assignment (issue_id, assignee_id)'
-                    ' VALUES (?, ?)',
-                    (issue_id, g.user['id'])
-                )
+                insert_assignment(cursor, issue_id, g.user['id'])
             db.commit()
             return redirect(url_for('issue.index'))
 
@@ -72,7 +75,7 @@ def create():
 
 def get_issue(id, check_author=True):
     issue = get_db().execute(
-        'SELECT i.id, title, body, created, author_id, username'
+        'SELECT i.id, title, body, created, author_id, username, team_id'
         ' FROM issue i JOIN user u ON i.author_id = u.id'
         ' WHERE i.id = ?',
         (id,)
@@ -81,15 +84,16 @@ def get_issue(id, check_author=True):
     if issue is None:
         abort(404, f"Post id {id} doesn't exist.")
 
-    if check_author and issue['author_id'] != g.user['id']:
+    admin_access = issue['team_id'] == g.user['team_id'] and g.user['admin_level'] > 0
+    if check_author and issue['author_id'] != g.user['id'] and not admin_access:
         abort(403)
 
     return issue
 
-@bp.route('/<int:id>/update', methods=('GET', 'POST'))
+@bp.route('/<int:issue_id>/update', methods=('GET', 'POST'))
 @login_required
-def update(id):
-    post = get_issue(id)
+def update(issue_id):
+    issue = get_issue(issue_id)
 
     if request.method == 'POST':
         title = request.form['title']
@@ -106,11 +110,12 @@ def update(id):
             db.execute(
                 'UPDATE issue SET title = ?, body = ?'
                 ' WHERE id = ?',
-                (title, body, id)
+                (title, body, issue_id)
             )
             db.commit()
             return redirect(url_for('issue.index'))
-    return render_template('issue/update.html', post=post)
+    print(get_users())
+    return render_template('issue/update.html', issue=issue, assignees=get_assignees(issue_id), users=get_users())
 
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
@@ -120,3 +125,30 @@ def delete(id):
     db.execute('DELETE FROM issue WHERE id = ?', (id,))
     db.commit()
     return redirect(url_for('issue.index'))
+
+@bp.route('/<int:issue_id>/<int:user_id>/add-assignee', methods=('GET',))
+@login_required
+@team_lead_required
+def add_assignee(issue_id, user_id):
+    assert g.user['team_id'] in get_issue_teams()[issue_id]
+    assert get_user(user_id)['team_id'] in get_issue_teams()[issue_id]
+
+    db = get_db()
+    cursor = db.cursor()
+    insert_assignment(cursor, issue_id, user_id)
+    db.commit()
+    return redirect(url_for('issue.update', issue_id=issue_id))
+
+@bp.route('/<int:issue_id>/<int:assignee_id>/remove-assignee', methods=('GET',))
+@login_required
+@team_lead_required
+def remove_assignee(issue_id, assignee_id):
+    assert g.user['team_id'] in get_issue_teams()[issue_id]
+    assert get_user(assignee_id)['team_id'] in get_issue_teams()[issue_id]
+
+    db = get_db()
+    cursor = db.cursor()
+    delete_assignment(cursor, issue_id, assignee_id)
+    db.commit()
+    return redirect(url_for('issue.update', issue_id=issue_id))
+
