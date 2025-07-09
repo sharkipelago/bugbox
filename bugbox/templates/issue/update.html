@@ -14,6 +14,7 @@
       <form id="delete-form" action="{{ url_for('issue.delete', id=issue['id']) }}" method="post"></form>
       <input type="submit" value="Save" class="btn btn-primary" form="update-form"/>
       <input class="btn btn-danger " type="submit" value="Delete" form="delete-form" onclick="return confirm('Are you sure?');">
+      <a class="btn btn-warning" href="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user['id'])}}">Submit</a>
     </div>
     <div class="col-3">
       <h4 class="me-2">Assignees

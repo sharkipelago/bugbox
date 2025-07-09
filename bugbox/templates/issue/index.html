@@ -1,9 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Issues{% endblock %}
-{% block header %} <a class="action" href="{{ url_for('issue.create') }}">New</a> {% endblock %}
-
-{% block content %}
+{% macro issueComponent(issues) -%}
   {% for issue in issues %} 
     <article>
       <header>
@@ -29,4 +26,15 @@
       <hr>
     {% endif %}
   {% endfor %}
+{%- endmacro %}
+
+{% block title %}Issues{% endblock %}
+{% block header %} <a class="action" href="{{ url_for('issue.create') }}">New</a> {% endblock %}
+
+{% block content %}
+  <h2>Review</h2>
+  {{ issueComponent(issues|selectattr('progress', 'equalto', 1)) }}
+  <h2>Open</h2>
+  {{ issueComponent(issues|selectattr('progress', 'equalto', 0)) }}
+
 {% endblock %}

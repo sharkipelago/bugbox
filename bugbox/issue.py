@@ -4,10 +4,10 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from werkzeug.exceptions import abort
 
 from bugbox.auth import login_required, team_lead_required
-from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment
+from bugbox.team import issue_team_required
+from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress
 
 bp = Blueprint('issue', __name__)
-
 
 def get_assignments():
     return get_db().execute(
@@ -23,12 +23,13 @@ def delete_assignment(cursor, issue_id, assignee_id):
 def index():
     db = get_db()
     issues = db.execute(
-        'SELECT i.id, title, body, created, author_id, (first_name || " " || last_name) AS author_name, team_id'
+        'SELECT *, (first_name || " " || last_name) AS author_name'
         ' FROM issue i'
         ' JOIN user u ON i.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
 
+    print("TEST", issues[0].keys())
     return render_template('issue/index.html', issues=issues, assignments=get_assignments(), issue_teams=get_issue_teams(), team_names=get_team_names())
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -99,6 +100,7 @@ def update(issue_id):
 
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
+@issue_team_required
 def delete(id):
     get_issue(id)
     db = get_db()
@@ -108,10 +110,11 @@ def delete(id):
 
 @bp.route('/<int:issue_id>/<int:user_id>/add-assignee', methods=('GET',))
 @login_required
+@issue_team_required
 @team_lead_required
 def add_assignee(issue_id, user_id):
-    assert g.user['team_id'] in get_issue_teams()[issue_id]
-    assert get_user(user_id)['team_id'] in get_issue_teams()[issue_id]
+    assert g.user['team_id'] in get_issue_teams(issue_id)
+    assert get_user(user_id)['team_id'] in get_issue_teams(issue_id)
 
     db = get_db()
     cursor = db.cursor()
@@ -121,14 +124,23 @@ def add_assignee(issue_id, user_id):
 
 @bp.route('/<int:issue_id>/<int:assignee_id>/remove-assignee', methods=('GET',))
 @login_required
+@issue_team_required
 @team_lead_required
 def remove_assignee(issue_id, assignee_id):
-    assert g.user['team_id'] in get_issue_teams()[issue_id]
-    assert get_user(assignee_id)['team_id'] in get_issue_teams()[issue_id]
+    assert g.user['team_id'] in get_issue_teams(issue_id)
+    assert get_user(assignee_id)['team_id'] in get_issue_teams(issue_id)
 
     db = get_db()
     cursor = db.cursor()
     delete_assignment(cursor, issue_id, assignee_id)
     db.commit()
     return redirect(url_for('issue.update', issue_id=issue_id))
+
+@login_required
+# TODO assignee required
+@bp.route('/<int:issue_id>/<int:submitter_id>/submit-issue', methods=('GET',))
+def submit_issue(issue_id, submitter_id):
+    update_issue_progress(issue_id, 1)
+    return redirect(url_for('issue.index'))
+
 
