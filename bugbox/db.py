@@ -92,6 +92,16 @@ def get_users():
         ' FROM user u LEFT JOIN team t ON u.team_id = t.id'
     ).fetchall()
 
+def get_team_names():
+    team_query = get_db().execute(
+        'SELECT *'
+        ' FROM team t'
+    ).fetchall()
+    team_names = {}
+    for t in team_query:
+        team_names[t['id']] = t['team_name']
+    return team_names
+
 def get_issue_teams():
     issue_teams_query = get_db().execute(
         'SELECT *' 

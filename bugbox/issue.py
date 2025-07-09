@@ -4,7 +4,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from werkzeug.exceptions import abort
 
 from bugbox.auth import login_required, team_lead_required
-from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees
+from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names
 
 bp = Blueprint('issue', __name__)
 
@@ -37,7 +37,7 @@ def index():
         ' ORDER BY created DESC'
     ).fetchall()
 
-    return render_template('issue/index.html', issues=issues, assignments=get_assignments(), issue_teams=get_issue_teams())
+    return render_template('issue/index.html', issues=issues, assignments=get_assignments(), issue_teams=get_issue_teams(), team_names=get_team_names())
 
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required

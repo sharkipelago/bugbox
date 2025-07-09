@@ -8,7 +8,7 @@
     <article>
       <header>
         <div>
-          <h1>{{ issue['title'] }} | {% for team in issue_teams[issue['id']] %} {{team}} {% endfor %} </h1>
+          <h1>{{ issue['title'] }} | {% for team_id in issue_teams[issue['id']] %} {{team_names[team_id]}} {% endfor %} </h1>
           <div class="about">by {{ issue['author_name'] }} on {{ issue['created'].strftime('%Y-%m-%d') }}</div>
         </div>
         {% if g.user['id'] == issue['author_id'] or (g.user['admin_level'] == 1 and issue['team_id'] == g.user['team_id']) %}

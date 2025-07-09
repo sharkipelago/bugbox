@@ -39,4 +39,7 @@ def create_app(test_config=None):
     from . import collab
     app.register_blueprint(collab.bp)
 
+    from . import about
+    app.register_blueprint(about.bp)
+
     return app
