@@ -32,8 +32,12 @@
       </div>
       <hr>
       {% for a in assignees %}
-        <a class="list-group-item " href="{{ url_for('issue.remove_assignee', issue_id=issue['id'], assignee_id=a['id']) }}">
-          {{ a['name'] }}<i class="bi bi-x list-group-item-action"></i></a>
+        {% if g.user['admin_level'] > 0 %}
+          <a class="list-group-item " href="{{ url_for('issue.remove_assignee', issue_id=issue['id'], assignee_id=a['id']) }}">
+            {{ a['name'] }} <i class="bi bi-x list-group-item-action"></i></a>
+        {% else %}
+          <span class="list-group-item ">{{ a['name'] }} </span>        
+        {% endif %}
       {% endfor %}
     </div>
   </div>

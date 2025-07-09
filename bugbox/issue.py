@@ -4,7 +4,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from werkzeug.exceptions import abort
 
 from bugbox.auth import login_required, team_lead_required
-from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names
+from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment
 
 bp = Blueprint('issue', __name__)
 
@@ -14,14 +14,6 @@ def get_assignments():
         'SELECT a.id, issue_id, assignee_id, (first_name || " " || last_name) as assignee_name'
         ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
     ).fetchall()
-
-# Only executes not resposible for committing or anything
-def insert_assignment(cursor, issue_id, assignee_id):
-    cursor.execute(
-        'INSERT INTO assignment (issue_id, assignee_id)'
-        ' VALUES (?, ?)',
-        (issue_id, assignee_id)
-    )
 
 def delete_assignment(cursor, issue_id, assignee_id):
     cursor.execute('DELETE FROM assignment WHERE issue_id = ? AND assignee_id = ?', (issue_id, assignee_id))
@@ -53,22 +45,10 @@ def create():
         if error is not None:
             flash(error)
         else:
-            db = get_db()
-            cursor = db.cursor()
-            cursor.execute(
-                'INSERT INTO issue (title, body, author_id)'
-                ' VALUES (?, ?, ?)',
-                (title, body, g.user['id'])
-            )
-            issue_id = cursor.lastrowid
-            cursor.execute(
-                'INSERT INTO issue_team (issue_id, team_id)'
-                ' VALUES (?, ?)',
-                (issue_id, g.user['team_id'])
-            )
+            initial_assignees = []
             if 'self-assign' in request.form:
-                insert_assignment(cursor, issue_id, g.user['id'])
-            db.commit()
+                initial_assignees.append( g.user['id']) 
+            create_issue(g.user['id'], title, body, initial_assignees)
             return redirect(url_for('issue.index'))
 
     return render_template('issue/create.html')

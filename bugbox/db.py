@@ -27,6 +27,14 @@ DEFAULT_USERS = [
     ("laika", generate_password_hash("laikaspaceneighbor"), "Laika", " Kudryavka", 0, teams["QA"])
 ]
 
+DEFAULT_ISSUES = [
+    (2, "Probably more winter", "I think I saw the shadow? But I also just woke up it could've been a hibernation dust build-up"),
+    (2, "Pennsylvanian top hats", "Where can I accquire one?"),
+    (3, "飼い主はまだ帰っていないの？", "彼がお菓子を持ってきてくれるといいな"),
+    (4, "Zoo transfer request", "This place is too hot"),
+    (5, "Вкусы мороженого «Астронавт»", "будут ли другие вкусы, кроме шоколада?")
+]
+
 def get_db():
     if 'db' not in g:
         g.db = sqlite3.connect(
@@ -61,7 +69,9 @@ def init_db():
         DEFAULT_USERS,
     )
     db.commit()
-
+        
+    for i in DEFAULT_ISSUES:
+        create_issue(*i)
 
 @click.command('init-db')
 def init_db_command():
@@ -85,6 +95,35 @@ def get_user(user_id):
         ' WHERE u.id = ?',
         (user_id,)
     ).fetchone()  
+
+# Only executes not resposible for committing or anything
+def insert_assignment(cursor, issue_id, assignee_id):
+    assert get_issue_teams()[issue_id] ==  get_user(assignee_id)['team_id']
+    cursor.execute(
+        'INSERT INTO assignment (issue_id, assignee_id)'
+        ' VALUES (?, ?)',
+        (issue_id, assignee_id)
+    )
+
+def create_issue(author_id, title, body, assignee_ids = []):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        'INSERT INTO issue (author_id, title, body)'
+        ' VALUES (?, ?, ?)',
+        (author_id, title, body)
+    )
+    issue_id = cursor.lastrowid
+    cursor.execute(
+        'INSERT INTO issue_team (issue_id, team_id)'
+        ' VALUES (?, ?)',
+        (issue_id, get_user(author_id)['team_id'])
+    )
+    for a in assignee_ids:
+        insert_assignment(cursor, issue_id, a)
+    cursor.close()
+    db.commit()   
+
 
 def get_users():
     return get_db().execute(

@@ -10,7 +10,7 @@ CREATE TABLE user (
 	[password] TEXT NOT NULL,
 	first_name TEXT NOT NULL,
 	last_name TEXT NOT NULL,
-	admin_level INTEGER NOT NULL,
+	admin_level INTEGER NOT NULL CHECK (admin_level BETWEEN 0 AND 2),
 	team_id INTEGER,
 	FOREIGN KEY (team_id) REFERENCES team (id)
 );
@@ -21,6 +21,7 @@ CREATE TABLE issue (
 	created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	title TEXT NOT NULL,
 	body TEXT NOT NULL,
+	progress INT NOT NULL DEFAULT 0 CHECK (progress BETWEEN 0 AND 2),  -- 0 is created, 1 is under review, 2 is closed
 	FOREIGN KEY (author_id) REFERENCES user (id)
 );
 
