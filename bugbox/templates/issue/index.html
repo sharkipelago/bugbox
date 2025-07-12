@@ -36,5 +36,7 @@
   {{ issueComponent(issues|selectattr('progress', 'equalto', 1)) }}
   <h2>Open</h2>
   {{ issueComponent(issues|selectattr('progress', 'equalto', 0)) }}
+  <h2>Closed</h2>
+  {{ issueComponent(issues|selectattr('progress', 'equalto', 2)) }}
 
 {% endblock %}

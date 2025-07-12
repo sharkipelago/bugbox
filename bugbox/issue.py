@@ -56,7 +56,7 @@ def create():
 
 def get_issue(id, check_author=True):
     issue = get_db().execute(
-        'SELECT i.id, title, body, created, author_id, username, team_id'
+        'SELECT *'
         ' FROM issue i JOIN user u ON i.author_id = u.id'
         ' WHERE i.id = ?',
         (id,)
@@ -95,7 +95,6 @@ def update(issue_id):
             )
             db.commit()
             return redirect(url_for('issue.index'))
-    print(get_users())
     return render_template('issue/update.html', issue=issue, assignees=get_assignees(issue_id), users=get_users())
 
 @bp.route('/<int:id>/delete', methods=('POST',))
@@ -138,9 +137,16 @@ def remove_assignee(issue_id, assignee_id):
 
 @login_required
 # TODO assignee required
+# TODO Change to post for more security?
 @bp.route('/<int:issue_id>/<int:submitter_id>/submit-issue', methods=('GET',))
 def submit_issue(issue_id, submitter_id):
     update_issue_progress(issue_id, 1)
     return redirect(url_for('issue.index'))
 
+@login_required
+# TODO assignee required
+@bp.route('/<int:issue_id>/<int:closer_id>/close-issue', methods=('GET',))
+def close_issue(issue_id, closer_id):
+    update_issue_progress(issue_id, 2)
+    return redirect(url_for('issue.index'))
 

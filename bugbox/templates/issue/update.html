@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit "{{ issue['title'] }}"{% endblock %}
+{% block title %}Edit "{{ issue['title'] }}" {{issue['progress'] }}{% endblock %}
 
 {% block content %}
   <div class="row">
@@ -12,12 +12,16 @@
         <textarea name="body" id="body" class="form-control mb-2">{{ request.form['body'] or issue['body'] }}</textarea>
       </form>
       <form id="delete-form" action="{{ url_for('issue.delete', id=issue['id']) }}" method="post"></form>
-      <input type="submit" value="Save" class="btn btn-primary" form="update-form"/>
+      <input type="submit" value="Save" class="btn btn-secondary" form="update-form"/>
       <input class="btn btn-danger " type="submit" value="Delete" form="delete-form" onclick="return confirm('Are you sure?');">
-      <a class="btn btn-warning" href="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user['id'])}}">Submit</a>
+      {% if issue['progress'] == 0 %}
+        <a class="btn btn-secondary" href="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user['id'])}}">Submit</a>
+      {% elif issue['progress'] == 1 %}
+        <a class="btn btn-primary" href="{{ url_for('issue.close_issue', issue_id=issue['id'], closer_id=g.user['id'])}}">Close</a>
+      {% endif %}
     </div>
     <div class="col-3">
-      <h4 class="me-2">Assignees
+      <h4 class="me-2">Assignees  
         {% if g.user['admin_level'] == 1 and g.user['team_id'] == issue['team_id'] %}
           <span class="btn btn-info btn-sm" data-bs-toggle="collapse" data-bs-target="#updateUserCollapse" aria-expanded="false">Add</span>
         {% endif %}
