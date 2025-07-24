@@ -8,24 +8,19 @@ from werkzeug.security import generate_password_hash
 import click
 from flask import current_app, g
 
-teams = {
-    "Admin": 0,
-    "Frontend": 1,
-    "Backend": 2,
-    "Mobile": 3,
-    "QA": 4,
-    "DevOps": 5
-}
+from bugbox.team import TEAMS
+
+TEAM_IDS = {team_name: team_id for team_id, team_name in enumerate(TEAMS)}
 
 DEFAULT_USERS = [
     # Admin
     ("md", "mooodeng", "Moo", "Deng", 2), 
     # Team Lead
-    ("puxp", "punxsutawney", "Punxsutawney", "Phil", 1, teams["Mobile"]),
+    ("puxp", "punxsutawney", "Punxsutawney", "Phil", 1, TEAM_IDS["Mobile"]),
     # User
-    ("hachi","hachikoko", "Chūken", "Hachikō", 0, teams["Backend"]),
-    ("harambe","rememberharambe", "Harambe", "Van Coppenolle", 0, teams["Mobile"]),
-    ("laika","laikaspaceneighbor", "Laika", " Kudryavka", 0, teams["QA"])
+    ("hachi","hachikoko", "Chūken", "Hachikō", 0, TEAM_IDS["Backend"]),
+    ("harambe","rememberharambe", "Harambe", "Van Coppenolle", 0, TEAM_IDS["Mobile"]),
+    ("laika","laikaspaceneighbor", "Laika", " Kudryavka", 0, TEAM_IDS["QA"])
 ]
 
 DEFAULT_ISSUES = [
@@ -89,7 +84,7 @@ def init_db():
 
     db.executemany(
         "INSERT INTO team (id, team_name) VALUES (?, ?)",
-        [(id, name) for (name, id) in teams.items()],
+        [(id, name) for (name, id) in TEAM_IDS.items()],
     )
     db.commit()
 
@@ -120,7 +115,7 @@ def create_user(username, password, first_name, last_name, admin_level, team=Non
     cursor.execute(
         'INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id)' 
         ' VALUES (?, ?, ?, ?, ?, ?)',
-        (username, generate_password_hash(password), first_name, last_name, admin_level, teams["Admin"] if admin_level == 2 else team)
+        (username, generate_password_hash(password), first_name, last_name, admin_level, TEAM_IDS["Admin"] if admin_level == 2 else team)
     )
     cursor.close()
     db.commit()

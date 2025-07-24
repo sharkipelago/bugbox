@@ -24,18 +24,19 @@
               <tr>
                 <td>{{user["first_name"]}} {{user["last_name"]}}</td>
                 <td>
-                  {% if user["admin_level"] < 2 %}
-                    {{user["team_name"]}}</td>
-                  {% endif %}
-                <td>
                   {% if user['id'] == g.user.id %}
-                    <span class="badge text-bg-secondary shadow-sm">Self</span>
+                    <span class="badge text-dark text-bg-self shadow-sm">Self</span>
                   {% endif %}
+
                   {% if user["admin_level"] == 2 %}
-                    <span class="badge text-dark text-bg-admin shadow-sm">Admin</span>
-                  {% elif user["admin_level"] == 1 %}
-                    <span class="badge text-dark ext-bg-team-lead shadow-sm">Team Lead</span>
-                  {% endif %}  
+                    <span class="badge text-dark shadow-sm text-bg-{{teams[user['team_id']]|lower}}">{{teams[user['team_id']]}}</span>
+                  {% else %}
+                    {% if user["admin_level"] == 1 %}
+                      <span class="badge text-dark text-bg-team-lead shadow-sm">Team Lead</span>
+                    {% endif %}  
+                    <span class="badge text-light shadow-sm text-bg-{{teams[user['team_id']]|lower}}">{{teams[user['team_id']]}}</span>
+                  {% endif %}
+                  
                 </td>
               </tr>
             {% endfor %}

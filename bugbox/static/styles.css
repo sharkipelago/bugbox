@@ -1,27 +1,34 @@
+/* https://coolors.co/7d84b2-8e9dcc-d9dbf1-f9f9ed-dbf4a7 */
 .text-bg-admin {
-  background-color: #FFFC99;
+  background-color: #DBF4A7;
 }
 
 .text-bg-team-lead {
-  background-color: #B1F8F2
+  background-color: #D9DBF1
 }
 
-.front-end {
-
+.text-bg-self {
+  background-color: #F9F9ED;
 }
 
-.back-end {
-
+/* https://coolors.co/palette/f94144-f3722c-f8961e-f9844a-f9c74f-90be6d-43aa8b-4d908e-577590-277da1 */
+/* palatte */
+.text-bg-frontend {
+  background-color: #F94144;
 }
 
-.qa {
-
+.text-bg-backend {
+  background-color: #277DA1;
 }
 
-.mobile {
-
+.text-bg-qa {
+  background-color: #F9844A;
 }
 
-.ml-ai{
+.text-bg-mobile {
+  background-color: #4D908E;
+}
 
+.text-bg-devops{
+  background-color: #90BE6D;
 }

@@ -3,8 +3,7 @@ from collections import defaultdict
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
 
-from bugbox.auth import login_required, team_lead_required
-from bugbox.team import issue_team_required
+from bugbox.auth import login_required, team_lead_required, issue_team_required
 from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress
 
 bp = Blueprint('issue', __name__)
