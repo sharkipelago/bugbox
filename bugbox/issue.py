@@ -2,25 +2,29 @@ import functools
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
 
-from bugbox.auth import login_required, team_lead_required
-from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress
+from bugbox.auth import login_required
+from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment
 
 bp = Blueprint('issue', __name__)
+
+# how much can this user edit this issue
+def get_edit_level(issue_id):
+    team_ids = get_issue_teams(issue_id)
+    assignee_ids = [a['id'] for a in get_assignees(issue_id)]
+
+    if g.user['admin_level'] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] in team_ids:
+        return 2
+    elif g.user['id'] in assignee_ids:
+        return 1
+    return 0
+    
 
 # ==View Wrappers==
 # Can Update, Delete, Edit Assignees, Mark as Reviewed and Close an issue in addition to contribute_perms
 def modify_perms_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        print("ID", kwargs.get('issue_id'))
-        team_ids = get_issue_teams(kwargs.get('issue_id'))
-        print("PRINTING IDS")
-        print(team_ids)
-        assert isinstance(team_ids, set)
-
-        print("HEEERE")
-        if (g.user['admin_level'] == 2 or 
-            g.user['admin_level'] == 1 and g.user['team_id'] in team_ids):
+        if get_edit_level(kwargs.get('issue_id')) == 2:
             return view(**kwargs)
         # TODO custom modify_perms denied page
         return redirect(url_for('admin.denied'))
@@ -30,13 +34,7 @@ def modify_perms_required(view):
 def contribute_perms_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        team_ids = get_issue_teams(kwargs.get('issue_id'))
-        assert isinstance(team_ids, set)
-        assignee_ids = [a['id'] for a in get_assignees(kwargs.get('issue_id'))]
-
-        if (g.user['admin_level'] == 2 or 
-            g.user['admin_level'] == 1 and g.user['team_id'] in team_ids or
-            g.user['admin_level'] < 1 and g.user['id'] in assignee_ids):
+        if get_edit_level(kwargs.get('issue_id')) > 0:
             return view(**kwargs)
         # TODO custom modify_perms denied page
         return redirect(url_for('admin.denied'))
@@ -112,13 +110,29 @@ def get_issue(id):
 @login_required
 def details(issue_id):
     issue = get_issue(issue_id)
-    return render_template('issue/details.html', issue=issue, assignees=get_assignees(issue_id), users=get_users())
+    # should correspond to contribute_perms (edit_level = 1) and modify_perms (edit_level = 2)
+
+    return render_template('issue/details.html', issue=issue, assignees=get_assignees(issue_id), users=get_users(), comments=get_comments(issue_id), edit_level=get_edit_level(issue_id))
+
+@bp.route('/<int:issue_id>/add-comment', methods=('POST',))
+@login_required
+@contribute_perms_required
+def add_comment(issue_id):
+    content = request.form['content']
+    error = None
+    if not content:
+        error = 'Blank comments are not allowed'
+    if error is not None:
+        flash(error)
+
+    insert_comment(g.user['id'], issue_id, content)
+    return redirect(url_for('issue.details', issue_id=issue_id))
+
 
 @bp.route('/<int:issue_id>/update', methods=('POST',))
 @login_required
 @modify_perms_required
 def update(issue_id):
-    print("WE even updating?")
     title = request.form['title']
     body = request.form['body']
     error = None

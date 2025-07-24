@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS issue;
+DROP TABLE IF EXISTS comment;
 DROP TABLE IF EXISTS assignment;
 DROP TABLE IF EXISTS team;
 DROP TABLE IF EXISTS issue_team;
@@ -17,11 +18,20 @@ CREATE TABLE user (
 
 CREATE TABLE issue (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	author_id INTEGER NOT NULL,
 	created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	title TEXT NOT NULL,
-	body TEXT NOT NULL,
 	progress INT NOT NULL DEFAULT 0 CHECK (progress BETWEEN 0 AND 2),  -- 0 is created, 1 is under review, 2 is closed
+	author_id INTEGER NOT NULL,
+	title TEXT NOT NULL,
+	FOREIGN KEY (author_id) REFERENCES user (id)
+);
+
+CREATE TABLE comment (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	author_id INTEGER NOT NULL,
+	issue_id INTEGER,
+	content TEXT NOT NULL,
+	FOREIGN KEY (issue_id) REFERENCES issue (id),
 	FOREIGN KEY (author_id) REFERENCES user (id)
 );
 

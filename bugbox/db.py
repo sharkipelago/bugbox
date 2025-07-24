@@ -17,6 +17,7 @@ DEFAULT_USERS = [
     ("md", "mooodeng", "Moo", "Deng", 2), 
     # Team Lead
     ("puxp", "punxsutawney", "Punxsutawney", "Phil", 1, TEAM_IDS["Mobile"]),
+    ("ohana", "experiment626", "Stitch", "Pelekai", 1, TEAM_IDS['DevOps']),
     # User
     ("hachi","hachikoko", "Chūken", "Hachikō", 0, TEAM_IDS["Backend"]),
     ("harambe","rememberharambe", "Harambe", "Van Coppenolle", 0, TEAM_IDS["Mobile"]),
@@ -24,11 +25,11 @@ DEFAULT_USERS = [
 ]
 
 DEFAULT_ISSUES = [
-    (2, "Probably more winter", "I think I saw the shadow? But I also just woke up it could've been a hibernation dust build-up", [2, 4]),
+    (2, "Probably more winter", "I think I saw the shadow? But I also just woke up it could've been a hibernation dust build-up", [2, 5]),
     (2, "Pennsylvanian top hats", "Where can I accquire one?"),
-    (3, "飼い主はまだ帰っていないの？", "彼がお菓子を持ってきてくれるといいな"),
-    (4, "Zoo transfer request", "This place is too hot"),
-    (5, "Вкусы мороженого «Астронавт»", "будут ли другие вкусы, кроме шоколада?")
+    (4, "飼い主はまだ帰っていないの？", "彼がお菓子を持ってきてくれるといいな"),
+    (5, "Zoo transfer request", "This place is too hot"),
+    (6, "Вкусы мороженого «Астронавт»", "будут ли другие вкусы, кроме шоколада?")
 ]
 
 
@@ -105,13 +106,13 @@ def create_user(username, password, first_name, last_name, admin_level, team=Non
     cursor.close()
     db.commit()
 
-def create_issue(author_id, title, body, assignee_ids = []):
+def create_issue(author_id, title, initial_comment, assignee_ids = []):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
-        'INSERT INTO issue (author_id, title, body)'
-        ' VALUES (?, ?, ?)',
-        (author_id, title, body)
+        'INSERT INTO issue (author_id, title)'
+        ' VALUES (?, ?)',
+        (author_id, title)
     )
     issue_id = cursor.lastrowid
     cursor.execute(
@@ -119,6 +120,7 @@ def create_issue(author_id, title, body, assignee_ids = []):
         ' VALUES (?, ?)',
         (issue_id, get_user(author_id)['team_id'])
     )
+    insert_comment(author_id, issue_id, initial_comment, cursor)
     for a in assignee_ids:
         insert_assignment(cursor, issue_id, a)
     cursor.close()
@@ -138,6 +140,15 @@ def get_users():
         ' FROM user u LEFT JOIN team t ON u.team_id = t.id'
     ).fetchall()
 
+def get_comments(issue_id):
+    return get_db().execute(
+        'SELECT c.*, (u.first_name || " " || u.last_name) as author_name'
+        ' FROM comment c'
+        ' LEFT JOIN user u ON c.author_id = u.id'
+        ' WHERE c.issue_id = ?',
+        (issue_id,)
+    ).fetchall()
+
 
 # Only executes not resposible for committing or anything
 def insert_assignment(cursor, issue_id, assignee_id):
@@ -149,6 +160,18 @@ def insert_assignment(cursor, issue_id, assignee_id):
         (issue_id, assignee_id)
     )
 
+# If cursor is provided, will not self_commit
+def insert_comment(author_id, issue_id, content, _cursor=None):
+    cursor = _cursor if _cursor else get_db().cursor()
+    cursor.execute(
+        'INSERT into comment (author_id, issue_id, content)'
+        ' VALUES (?, ?, ?)',
+        (author_id, issue_id, content)
+    )
+    if _cursor:
+        return
+    cursor.close()
+    get_db().commit()
 
 def get_team_names():
     team_query = get_db().execute(
