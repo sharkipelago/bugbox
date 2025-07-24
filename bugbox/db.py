@@ -9,23 +9,23 @@ import click
 from flask import current_app, g
 
 teams = {
-    "Unassigned": -1,
-    "Frontend": 0,
-    "Backend": 1,
-    "Mobile": 2,
-    "QA": 3,
-    "DevOps": 4
+    "Admin": 0,
+    "Frontend": 1,
+    "Backend": 2,
+    "Mobile": 3,
+    "QA": 4,
+    "DevOps": 5
 }
 
 DEFAULT_USERS = [
     # Admin
-    ("md", generate_password_hash("mooodeng"), "Moo", "Deng", 2, None), 
+    ("md", "mooodeng", "Moo", "Deng", 2), 
     # Team Lead
-    ("puxp", generate_password_hash("punxsutawney"), "Punxsutawney", "Phil", 1, teams["Mobile"]),
+    ("puxp", "punxsutawney", "Punxsutawney", "Phil", 1, teams["Mobile"]),
     # User
-    ("hachi", generate_password_hash("hachikoko"), "Chūken", "Hachikō", 0, teams["Backend"]),
-    ("harambe", generate_password_hash("rememberharambe"), "Harambe", "Van Coppenolle", 0, teams["Mobile"]),
-    ("laika", generate_password_hash("laikaspaceneighbor"), "Laika", " Kudryavka", 0, teams["QA"])
+    ("hachi","hachikoko", "Chūken", "Hachikō", 0, teams["Backend"]),
+    ("harambe","rememberharambe", "Harambe", "Van Coppenolle", 0, teams["Mobile"]),
+    ("laika","laikaspaceneighbor", "Laika", " Kudryavka", 0, teams["QA"])
 ]
 
 DEFAULT_ISSUES = [
@@ -93,12 +93,9 @@ def init_db():
     )
     db.commit()
 
-    db.executemany(
-        "INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id) VALUES (?, ?, ?, ?, ?, ?)",
-        DEFAULT_USERS,
-    )
-    db.commit()
-        
+    for u in DEFAULT_USERS:
+        create_user(*u)
+
     for i in DEFAULT_ISSUES:
         create_issue(*i)
 
@@ -117,23 +114,16 @@ def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
 
-def get_user(user_id):
-    return get_db().execute(
-        'SELECT *'
-        ' FROM user u'
-        ' WHERE u.id = ?',
-        (user_id,)
-    ).fetchone()  
-
-# Only executes not resposible for committing or anything
-def insert_assignment(cursor, issue_id, assignee_id):
-    # print(get_user(assignee_id)['team_id'], get_issue_teams()[issue_id])
-    assert get_user(assignee_id)['team_id'] in get_issue_teams()[issue_id] 
+def create_user(username, password, first_name, last_name, admin_level, team=None):
+    db = get_db()
+    cursor = db.cursor()
     cursor.execute(
-        'INSERT INTO assignment (issue_id, assignee_id)'
-        ' VALUES (?, ?)',
-        (issue_id, assignee_id)
+        'INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id)' 
+        ' VALUES (?, ?, ?, ?, ?, ?)',
+        (username, generate_password_hash(password), first_name, last_name, admin_level, teams["Admin"] if admin_level == 2 else team)
     )
+    cursor.close()
+    db.commit()
 
 def create_issue(author_id, title, body, assignee_ids = []):
     db = get_db()
@@ -154,12 +144,31 @@ def create_issue(author_id, title, body, assignee_ids = []):
     cursor.close()
     db.commit()   
 
+def get_user(user_id):
+    return get_db().execute(
+        'SELECT *'
+        ' FROM user u'
+        ' WHERE u.id = ?',
+        (user_id,)
+    ).fetchone()  
 
 def get_users():
     return get_db().execute(
         'SELECT *'
         ' FROM user u LEFT JOIN team t ON u.team_id = t.id'
     ).fetchall()
+
+
+# Only executes not resposible for committing or anything
+def insert_assignment(cursor, issue_id, assignee_id):
+    # print(get_user(assignee_id)['team_id'], get_issue_teams()[issue_id])
+    assert get_user(assignee_id)['team_id'] in get_issue_teams()[issue_id] 
+    cursor.execute(
+        'INSERT INTO assignment (issue_id, assignee_id)'
+        ' VALUES (?, ?)',
+        (issue_id, assignee_id)
+    )
+
 
 def get_team_names():
     team_query = get_db().execute(

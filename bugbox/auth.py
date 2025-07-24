@@ -51,7 +51,7 @@ def register():
                 # By default new registered users will join team unassigned
                 db.execute(
                     "INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id) VALUES (?, ?, ?, ?, ?, ?)",
-                    (username, generate_password_hash(password), first_name, last_name, 0, -1),
+                    (username, generate_password_hash(password), first_name, last_name, 0, None),
                 )
                 db.commit()
                 flash('Thanks for registering!', 'success')
