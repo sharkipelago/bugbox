@@ -67,6 +67,8 @@ def index():
     print("TEST", issues[0].keys())
     return render_template('issue/index.html', issues=issues, assignments=get_assignments(), issue_teams=get_issue_teams(), team_names=get_team_names())
 
+# TODO When admin creates issue can manually assign teams
+# TODO when team lead creates issue, can choose to assign other teams besides own team
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
@@ -150,7 +152,6 @@ def delete(issue_id):
 @login_required
 @modify_perms_required
 def add_assignee(issue_id, user_id):
-    assert g.user['team_id'] in get_issue_teams(issue_id)
     assert get_user(user_id)['team_id'] in get_issue_teams(issue_id)
 
     db = get_db()
@@ -163,7 +164,6 @@ def add_assignee(issue_id, user_id):
 @login_required
 @modify_perms_required
 def remove_assignee(issue_id, assignee_id):
-    assert g.user['team_id'] in get_issue_teams(issue_id)
     assert get_user(assignee_id)['team_id'] in get_issue_teams(issue_id)
 
     db = get_db()

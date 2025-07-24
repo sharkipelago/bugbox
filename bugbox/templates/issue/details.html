@@ -22,7 +22,7 @@
     </div>
     <div class="col-3">
       <h4 class="me-2">Assignees  
-        {% if g.user['admin_level'] == 1 and g.user['team_id'] == issue['team_id'] %}
+        {% if g.user['admin_level'] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] == issue['team_id'] %}
           <span class="btn btn-info btn-sm" data-bs-toggle="collapse" data-bs-target="#updateUserCollapse" aria-expanded="false">Add</span>
         {% endif %}
       </h4>    
