@@ -27,6 +27,10 @@
                   {% if user['id'] == g.user.id %}
                     <span class="badge text-dark text-bg-self shadow-sm">Self</span>
                   {% endif %}
+                  {% if user['team_id'] is none %}
+                    <span class="badge text-light text-bg-secondary shadow-sm">Unassigned</span>
+                  {% endif %}
+
 
                   {% if user["admin_level"] == 2 %}
                     <span class="badge text-dark shadow-sm text-bg-{{teams[user['team_id']]|lower}}">{{teams[user['team_id']]}}</span>
