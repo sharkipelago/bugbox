@@ -3,5 +3,35 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-About this project: ...
+<p>
+Hello,
+
+This is an issue/bug tracking application. After registering/loging in with an account you can create and work on issues accross three differenet permissions levels.
+
+<h6>Regular User</h6>
+<ul>
+  <li> Create new issues </li>
+  <li> Comment on issues they are assigned to </li>
+  <li> Submit issues for review </li>
+</ul>
+
+
+<h6>Team Lead</h6>
+<ul>
+  <li> Everything a regular user can</li>
+  <li> Add or remove their team label from an issue</li>
+  <li> Claim users with no team as part of their Team</li>
+  <li> Remove users from their team</li>
+  <li> Review issues within their team</li>
+  <li> Assign members of their team to work on an issue</li>
+  <li> Delete issues in their team</li>
+</ul>
+<h6>Admin</h6>
+  <li>Everything a team lead can do (accross all teams)</li>
+  <li>Promote a user to team Lead</li>
+  <li>Demote a team lead to user</li>
+  <li>Switch the team of any user/team lead</li>
+  <li>delete user (may be annoying withu updating comments and stuff)</li>
+</p>
+
 {% endblock %}

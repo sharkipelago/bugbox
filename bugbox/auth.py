@@ -97,6 +97,18 @@ def guest_admin_login():
     session['user_id'] = 1
     return redirect(url_for('index'))
 
+@bp.route('/team-lead-login')
+def guest_team_lead_login():
+    session.clear()
+    session['user_id'] = 2
+    return redirect(url_for('index'))
+
+@bp.route('/guest-login')
+def guest_login():
+    session.clear()
+    session['user_id'] = 5
+    return redirect(url_for('index'))
+
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
