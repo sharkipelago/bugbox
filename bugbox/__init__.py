@@ -2,6 +2,8 @@ import os
 from flask import Flask
 from flask_bootstrap import Bootstrap5
 
+from bugbox.team import TEAMS
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -22,6 +24,12 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    # pass teams object to every template
+    def inject_data():
+        return dict(TEAMS=TEAMS)
+    app.context_processor(inject_data)
+
 
     app.config["BOOTSTRAP_BOOTSWATCH_THEME"] = 'sandstone' #https://bootswatch.com/
     Bootstrap5(app) # adds boostrap object https://bootstrap-flask.readthedocs.io/en/stable/basic/

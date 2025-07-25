@@ -2,6 +2,18 @@
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% from 'bootstrap5/utils.html' import render_icon %}
 
+{% macro teamBadge(team_id) -%}
+  {% if TEAMS[team_id] == 'Admin' %}
+    <span class="badge text-dark shadow-sm text-bg-{{TEAMS[team_id]|lower}}">{{TEAMS[team_id]}}</span>
+  {% else %}
+    <span class="badge text-light shadow-sm text-bg-{{TEAMS[team_id]|lower}}">{{TEAMS[team_id]}}</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro teamLeadBadge() -%}
+  <span class="badge text-dark text-bg-team-lead shadow-sm">Team Lead</span>
+{% endmacro %}
+
 <!doctype html>
 <html lang="en">
 	<head>
@@ -111,7 +123,7 @@
 			<!-- End of Desktop Sidebar -->
 
 			<!-- Main Content -->
-			<div class="col-md-9 col-xl-10 d-flex flex-column px-0 h vh-100">
+			<div class="col d-flex flex-column px-0 h vh-100">
 				<!-- Topbar -->
 				<nav class="navbar navbar-expand mb-4 static-top shadow">
 

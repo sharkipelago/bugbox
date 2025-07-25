@@ -31,15 +31,11 @@
                     <span class="badge text-light text-bg-secondary shadow-sm">Unassigned</span>
                   {% endif %}
 
+                  {{teamBadge(user['team_id'])}}
+                  {% if user["admin_level"] == 1 %}
+                    {{teamLeadBadge()}}
+                  {% endif %}  
 
-                  {% if user["admin_level"] == 2 %}
-                    <span class="badge text-dark shadow-sm text-bg-{{teams[user['team_id']]|lower}}">{{teams[user['team_id']]}}</span>
-                  {% else %}
-                    {% if user["admin_level"] == 1 %}
-                      <span class="badge text-dark text-bg-team-lead shadow-sm">Team Lead</span>
-                    {% endif %}  
-                    <span class="badge text-light shadow-sm text-bg-{{teams[user['team_id']]|lower}}">{{teams[user['team_id']]}}</span>
-                  {% endif %}
                   
                 </td>
               </tr>

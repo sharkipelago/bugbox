@@ -5,7 +5,8 @@
     <article>
       <header>
         <div>
-          <h1>{{ issue['title'] }} | {% for team_id in issue_teams[issue['id']] %} {{team_names[team_id]}} {% endfor %} </h1>
+          <h6>{{ issue['title'] }} | {% for team_id in issue_teams[issue['id']] %} {{teamBadge(team_id)}} {% endfor %} </h6>
+          <h6>#{{issue['id']}}</h6>
           <div class="about">by {{ issue['author_name'] }} on {{ issue['created'].strftime('%Y-%m-%d') }}</div>
         </div>
           <a class="action" href="{{ url_for('issue.details', issue_id=issue['id']) }}">View</a>
