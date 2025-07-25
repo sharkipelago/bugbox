@@ -186,16 +186,31 @@ def remove_assignee(issue_id, assignee_id):
     return redirect(url_for('issue.details', issue_id=issue_id))
 
 @login_required
-# TODO assignee required
-# TODO Change to post for more security?
-@bp.route('/<int:issue_id>/<int:submitter_id>/submit-issue', methods=('GET',))
+@contribute_perms_required
+@bp.route('/<int:issue_id>/<int:submitter_id>/submit-issue', methods=('POST',))
 def submit_issue(issue_id, submitter_id):
     update_issue_progress(issue_id, 1)
+    submitter = get_user(submitter_id)
+    status_update_content = f'{submitter['first_name']} {submitter['last_name']} submitted this issue for review'
+    insert_comment(-1, issue_id, status_update_content)
     return redirect(url_for('issue.index'))
 
 @login_required
-# TODO assignee required
-@bp.route('/<int:issue_id>/<int:closer_id>/close-issue', methods=('GET',))
+@modify_perms_required
+@bp.route('/<int:issue_id>/<int:closer_id>/close-issue', methods=('POST',))
 def close_issue(issue_id, closer_id):
     update_issue_progress(issue_id, 2)
+    closer = get_user(closer_id)
+    status_update_content = f'{closer['first_name']} {closer['last_name']} closed this issue'
+    insert_comment(-1, issue_id, status_update_content)
+    return redirect(url_for('issue.index'))
+
+@login_required
+@modify_perms_required
+@bp.route('/<int:issue_id>/<int:reopener_id>/reopen-issue', methods=('POST',))
+def reopen_issue(issue_id, reopener_id):
+    update_issue_progress(issue_id, 0)
+    reopener = get_user(reopener_id)
+    status_update_content = f'{reopener['first_name']} {reopener['last_name']} reopened this issue'
+    insert_comment(-1, issue_id, status_update_content)
     return redirect(url_for('issue.index'))

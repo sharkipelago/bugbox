@@ -1,5 +1,31 @@
 {% extends 'base.html' %}
 
+{% macro commentButton(extra_attributes) %}
+  <input type="submit" value="Comment" class="btn btn-success ms-auto" form="add-comment-form" {{extra_attributes}}/>
+{% endmacro %}
+
+{% macro submitForReviewButton(extra_attributes='', button_value='Submit for Review') %}
+  <form id="submit-for-review-form" action="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user['id'])}}" method="post"> 
+    <input type="submit" value="{{button_value}}" class="btn btn-secondary me-2" form="submit-for-review-form" {{extra_attributes}}>
+  </form>
+{% endmacro %}
+
+{% macro reopenButton() %}
+  <form id="reopen-form" action="{{ url_for('issue.reopen_issue', issue_id=issue['id'], reopener_id=g.user['id'])}}" method="post"> 
+    <input type="submit" value="Reopen Issue" class="btn btn-secondary me-2" form="reopen-form" >
+  </form>
+{% endmacro %}
+
+{% macro closeButton() %}
+  <form id="close-form" action="{{ url_for('issue.close_issue', issue_id=issue['id'], closer_id=g.user['id'])}}" method="post"> 
+    <input type="submit" value="Close Issue" class="btn btn-warning me-2" form="close-form" >
+  </form>
+{% endmacro %}
+
+{% macro deleteButton() %}
+  <input class="btn btn-danger me-auto" type="submit" value="Delete Issue" form="delete-form" onclick="return confirm('Are you sure?');">
+{% endmacro %}
+
 {% block title %}Edit "{{ issue['title'] }}" {{issue['progress'] }}{% endblock %}
 
 {% block content %}
@@ -18,65 +44,72 @@
           <img src="https://github.com/mdo.png" alt="hugenerd" width="30" height="30" class="rounded-circle me-2">
         </a>
         <div class="card mb-2 flex-grow-1">
-          <div class="card-header">
-            <p class="small mb-0">          
-              {{c['author_name']}}
-              {% if loop.first %} 
-                opened on 
-              {% else %}
-                on 
-              {% endif %}
-              {{c['created'].strftime('%B %d, %H:%M')}}
-            </p>
-          </div>
-          <div class="card-body">
-            <p class="mb-0">{{c['content']}}</p>
-          </div>
+          {% if c['author_id'] == -1 %}
+            <div class="card-header bg-secondary text-black rounded-bottom">
+              <p class="small mb-0 fst-italic"> {{c['content']}} {{c['created'].strftime('%B %d, %H:%M')}} </p>
+            </div>
+          {% else %}    
+            <div class="card-header">
+              <p class="small mb-0">   
+                {{c['author_name']}}
+                {% if loop.first %} 
+                  opened on 
+                {% else %}
+                  on 
+                {% endif %}
+                {{c['created'].strftime('%B %d, %H:%M')}}
+              </p>
+            </div>
+            <div class="card-body">
+              <p class="mb-0">{{c['content']}}</p>
+            </div>
+          {% endif %}
         </div>        
       </div>
      
       {% endfor %}
-      {% if edit_level > 0 %}
-        <form id="add-comment-form" action="{{ url_for('issue.add_comment', issue_id=issue['id'])}}" method="post"> 
+      {% if edit_level > 0 and issue['progress'] < 2 %}
+        <form id="add-comment-form" action="{{ url_for('issue.add_comment', issue_id=issue['id'])}}" method="post"</form> 
           <label for="content" class="form-label">Add a comment</label>
-          <textarea name="content" id="content" class="form-control mb-2" required placeholder="Type your new comment here..."></textarea>
+          <textarea name="content" id="content" class="form-control mb-2" required  
+            {% if issue['progress'] > 0 and edit_level < 2 %}
+              disabled placeholder="New comments disabled while issue is under review"
+            {% else %}
+              placeholder="Type your new comment here..."
+            {% endif %}></textarea>
         </form>
       {% endif %}
 
       <div class="d-flex">
-        {% if edit_level > 0 %}
-          <a class="btn btn-secondary me-2" href="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user['id'])}}">Submit for Review </a>
-        {% endif %} 
-        {% if edit_level == 2 %}
-          <input class="btn btn-danger me-auto" type="submit" value="Delete Issue" form="delete-form" onclick="return confirm('Are you sure?');">
-        {% endif %}
-        {% if edit_level > 0 %}
-          <input type="submit" value="Comment" class="btn btn-success" form="add-comment-form"/>
+        {% if edit_level == 1 %}
+          {% if issue['progress'] == 0 %}
+            {{submitForReviewButton()}}
+            {{commentButton()}}
+          {% elif issue['progress'] == 1 %}
+            {{submitForReviewButton(extra_attributes='disabled', button_value='Under Review')}}
+            {{commentButton(extra_attributes='disabled')}}
+          {% endif %}
+        {% elif edit_level == 2 %}
+          {% if issue['progress'] == 0 %}
+            {{submitForReviewButton()}}
+            {{deleteButton()}}
+            {{commentButton()}}
+          {% elif issue['progress'] == 1 %}
+            {{reopenButton()}}
+            {{closeButton()}}
+            {{deleteButton()}}
+            {{commentButton()}}
+          {% endif %}
+          {% if issue['progress'] == 2 %}
+            {{reopenButton()}}
+          {% endif %}
         {% endif %}
       </div>
-
-
-
-
-      <!-- <form id="update-form" action="{{ url_for('issue.update', issue_id=issue['id'])}}" method="post">
-        <label for="title" class="form-label">Title</label>
-        <input name="title" id="title" class="form-control" value="{{ request.form['title'] or issue['title'] }}" required autofocus>
-        <label for="body" class="form-label">Body</label>
-        <textarea name="body" id="body" class="form-control mb-2">{{ request.form['body'] or issue['body'] }}</textarea>
-      </form>
-      <form id="delete-form" action="{{ url_for('issue.delete', issue_id=issue['id']) }}" method="post"></form>
-      <input type="submit" value="Save" class="btn btn-secondary" form="update-form"/>
-      <input class="btn btn-danger " type="submit" value="Delete" form="delete-form" onclick="return confirm('Are you sure?');">
-      {% if issue['progress'] == 0 %}
-        <a class="btn btn-secondary" href="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user['id'])}}">Submit</a>
-      {% elif issue['progress'] == 1 %}
-        <a class="btn btn-primary" href="{{ url_for('issue.close_issue', issue_id=issue['id'], closer_id=g.user['id'])}}">Close</a>
-      {% endif %} -->
     </div>
     <!-- Assignees -->
     <div class="col-3">
       <h4 class="me-2">Assignees  
-        {% if edit_level == 2 %}
+        {% if edit_level == 2 and issue['progress'] < 2%}
           <span class="btn btn-info btn-sm" data-bs-toggle="collapse" data-bs-target="#updateUserCollapse" aria-expanded="false">Add</span>
         {% endif %}
       </h4>  
@@ -92,7 +125,7 @@
       </div>
       <hr>
       {% for a in assignees %}
-        {% if edit_level == 2 %}
+        {% if edit_level == 2 and issue['progress'] < 2 %}
           <a class="list-group-item " href="{{ url_for('issue.remove_assignee', issue_id=issue['id'], assignee_id=a['id']) }}">
             {{ a['name'] }} <i class="bi bi-x list-group-item-action"></i></a>
         {% else %}
