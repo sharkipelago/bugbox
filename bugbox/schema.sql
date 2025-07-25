@@ -51,7 +51,7 @@ CREATE TABLE team (
 
 CREATE TABLE issue_team (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	issue_id INTEGER NOT NULL NULL, CHECK  (0 < issue_id),
+	issue_id INTEGER NOT NULL NULL CHECK (0 < issue_id),
 	team_id INTEGER,
 	CONSTRAINT issue_team UNIQUE (issue_id, team_id),
 	FOREIGN KEY (issue_id) REFERENCES issue (id),

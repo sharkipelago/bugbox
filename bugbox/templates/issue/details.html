@@ -5,9 +5,36 @@
 {% block content %}
   <div class="row">
     <div class="col flex-grow-1 text-break">
-      <h3>{{issue['title']}} <span class="fs-4">{% for team_id in issue_teams%} {{teamBadge(team_id)}} {% endfor %}</span></h3>
+      {% if edit_level == 2 %}
+        <form id="delete-form" action="{{ url_for('issue.delete', issue_id=issue['id']) }}" method="post"></form>
+      {% endif %}
+      
+      <h3 class="mb-0"><span class="fw-bold">{{issue['title']}}</span> #{{issue['id']}}</h3>
+      <p class="fs-6">{% for team_id in issue_teams%} {{teamBadge(team_id)}} {% endfor %}</p>
+
       {% for c in comments %}
-        <p>{{c['author_name']}} | {{c['content']}}</p>
+      <div class="d-flex">
+        <a>
+          <img src="https://github.com/mdo.png" alt="hugenerd" width="30" height="30" class="rounded-circle me-2">
+        </a>
+        <div class="card mb-2 flex-grow-1">
+          <div class="card-header">
+            <p class="small mb-0">          
+              {{c['author_name']}}
+              {% if loop.first %} 
+                opened on 
+              {% else %}
+                on 
+              {% endif %}
+              {{c['created'].strftime('%B %d, %H:%M')}}
+            </p>
+          </div>
+          <div class="card-body">
+            <p class="mb-0">{{c['content']}}</p>
+          </div>
+        </div>        
+      </div>
+     
       {% endfor %}
       {% if edit_level > 0 %}
         <form id="add-comment-form" action="{{ url_for('issue.add_comment', issue_id=issue['id'])}}" method="post"> 
@@ -15,17 +42,20 @@
           <textarea name="content" id="content" class="form-control mb-2" required placeholder="Type your new comment here..."></textarea>
         </form>
       {% endif %}
-      {% if edit_level == 2 %}
-        <form id="delete-form" action="{{ url_for('issue.delete', issue_id=issue['id']) }}" method="post"></form>
-      {% endif %}
+
+      <div class="d-flex">
+        {% if edit_level > 0 %}
+          <a class="btn btn-secondary me-2" href="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user['id'])}}">Submit for Review </a>
+        {% endif %} 
+        {% if edit_level == 2 %}
+          <input class="btn btn-danger me-auto" type="submit" value="Delete Issue" form="delete-form" onclick="return confirm('Are you sure?');">
+        {% endif %}
+        {% if edit_level > 0 %}
+          <input type="submit" value="Comment" class="btn btn-success" form="add-comment-form"/>
+        {% endif %}
+      </div>
 
 
-      {% if edit_level == 2 %}
-        <input class="btn btn-danger " type="submit" value="Delete Issue" form="delete-form" onclick="return confirm('Are you sure?');">
-      {% endif %}
-      {% if edit_level > 0 %}
-        <input type="submit" value="Comment" class="btn btn-success" form="add-comment-form"/>
-      {% endif %}
 
 
       <!-- <form id="update-form" action="{{ url_for('issue.update', issue_id=issue['id'])}}" method="post">
@@ -49,11 +79,12 @@
         {% if edit_level == 2 %}
           <span class="btn btn-info btn-sm" data-bs-toggle="collapse" data-bs-target="#updateUserCollapse" aria-expanded="false">Add</span>
         {% endif %}
-      </h4>    
+      </h4>  
       <div class="collapse" id="updateUserCollapse">
         <ul class="list-group">
-          {% for user in users | selectattr('team_id', 'equalto', issue['team_id']) | rejectattr('id', 'in', assignees|map(attribute='id')) %}
-            <a class="list-group-item list-group-item-action" href="{{ url_for('issue.add_assignee', issue_id=issue['id'], user_id=user['id']) }}">{{user['first_name']}} {{user['last_name']}}</a>
+          <!-- need list because map will return a generator as all jinja functions that oppearte on lists return generators -->
+          {% for user in users | selectattr('team_id', 'equalto', issue['team_id']) | rejectattr('id', 'in', assignees|map(attribute='id')|list) %}
+            <a class="list-group-item list-group-item-action" href="{{ url_for('issue.add_assignee', issue_id=issue['id'], user_id=user['id']) }}">{{user['first_name']}} {{user['last_name']}} </a>
           {% else %}
             <li class="list-group-item ">No more assignable users</li>
           {% endfor %}

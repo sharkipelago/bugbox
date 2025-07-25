@@ -11,10 +11,11 @@ bp = Blueprint('issue', __name__)
 def get_edit_level(issue_id):
     team_ids = get_issue_teams(issue_id)
     assignee_ids = [a['id'] for a in get_assignees(issue_id)]
+    issue = get_issue(issue_id)
 
     if g.user['admin_level'] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] in team_ids:
         return 2
-    elif g.user['id'] in assignee_ids:
+    elif g.user['id'] in assignee_ids or g.user['id'] == issue['author_id']:
         return 1
     return 0
     
@@ -110,8 +111,6 @@ def get_issue(id):
 @login_required
 def details(issue_id):
     issue = get_issue(issue_id)
-    # should correspond to contribute_perms (edit_level = 1) and modify_perms (edit_level = 2)
-
     return render_template('issue/details.html', issue=issue, issue_teams=get_issue_teams(issue_id), assignees=get_assignees(issue_id), users=get_users(), comments=get_comments(issue_id), edit_level=get_edit_level(issue_id))
 
 @bp.route('/<int:issue_id>/add-comment', methods=('POST',))
