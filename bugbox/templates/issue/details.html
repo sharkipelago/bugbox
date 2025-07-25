@@ -5,7 +5,7 @@
 {% block content %}
   <div class="row">
     <div class="col flex-grow-1 text-break">
-      <h3>{{issue['title']}}</h3>
+      <h3>{{issue['title']}} <span class="fs-4">{% for team_id in issue_teams%} {{teamBadge(team_id)}} {% endfor %}</span></h3>
       {% for c in comments %}
         <p>{{c['author_name']}} | {{c['content']}}</p>
       {% endfor %}

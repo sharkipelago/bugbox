@@ -112,7 +112,7 @@ def details(issue_id):
     issue = get_issue(issue_id)
     # should correspond to contribute_perms (edit_level = 1) and modify_perms (edit_level = 2)
 
-    return render_template('issue/details.html', issue=issue, assignees=get_assignees(issue_id), users=get_users(), comments=get_comments(issue_id), edit_level=get_edit_level(issue_id))
+    return render_template('issue/details.html', issue=issue, issue_teams=get_issue_teams(issue_id), assignees=get_assignees(issue_id), users=get_users(), comments=get_comments(issue_id), edit_level=get_edit_level(issue_id))
 
 @bp.route('/<int:issue_id>/add-comment', methods=('POST',))
 @login_required
