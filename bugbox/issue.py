@@ -2,8 +2,8 @@ import functools
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
 
-from bugbox.auth import login_required
-from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment
+from bugbox.auth import login_required, team_lead_required
+from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team
 
 bp = Blueprint('issue', __name__)
 
@@ -63,7 +63,6 @@ def index():
         ' ORDER BY created DESC'
     ).fetchall()
 
-    print("TEST", issues[0].keys())
     return render_template('issue/index.html', issues=issues, assignments=get_assignments(), issue_teams=get_issue_teams(), team_names=get_team_names())
 
 # TODO When admin creates issue can manually assign teams
@@ -185,9 +184,9 @@ def remove_assignee(issue_id, assignee_id):
     db.commit()
     return redirect(url_for('issue.details', issue_id=issue_id))
 
+@bp.route('/<int:issue_id>/<int:submitter_id>/submit-issue', methods=('POST',))
 @login_required
 @contribute_perms_required
-@bp.route('/<int:issue_id>/<int:submitter_id>/submit-issue', methods=('POST',))
 def submit_issue(issue_id, submitter_id):
     update_issue_progress(issue_id, 1)
     submitter = get_user(submitter_id)
@@ -195,9 +194,9 @@ def submit_issue(issue_id, submitter_id):
     insert_comment(-1, issue_id, status_update_content)
     return redirect(url_for('issue.index'))
 
+@bp.route('/<int:issue_id>/<int:closer_id>/close-issue', methods=('POST',))
 @login_required
 @modify_perms_required
-@bp.route('/<int:issue_id>/<int:closer_id>/close-issue', methods=('POST',))
 def close_issue(issue_id, closer_id):
     update_issue_progress(issue_id, 2)
     closer = get_user(closer_id)
@@ -205,12 +204,28 @@ def close_issue(issue_id, closer_id):
     insert_comment(-1, issue_id, status_update_content)
     return redirect(url_for('issue.index'))
 
+@bp.route('/<int:issue_id>/<int:reopener_id>/reopen-issue', methods=('POST',))
 @login_required
 @modify_perms_required
-@bp.route('/<int:issue_id>/<int:reopener_id>/reopen-issue', methods=('POST',))
 def reopen_issue(issue_id, reopener_id):
     update_issue_progress(issue_id, 0)
     reopener = get_user(reopener_id)
     status_update_content = f'{reopener['first_name']} {reopener['last_name']} reopened this issue'
     insert_comment(-1, issue_id, status_update_content)
     return redirect(url_for('issue.index'))
+
+@bp.route('/<int:issue_id>/<int:team_id>/remove-issue-team')
+@login_required
+@team_lead_required
+def remove_issue_team(issue_id, team_id):
+    assert team_id in get_issue_teams(issue_id)
+    delete_issue_team(issue_id, team_id)
+    return redirect(url_for('issue.details', issue_id=issue_id))
+
+@bp.route('/<int:issue_id>/<int:team_id>/add-issue-team')
+@login_required
+@team_lead_required
+def add_issue_team(issue_id, team_id):
+    assert team_id not in get_issue_teams(issue_id)
+    insert_issue_team(issue_id, team_id)
+    return redirect(url_for('issue.details', issue_id=issue_id))

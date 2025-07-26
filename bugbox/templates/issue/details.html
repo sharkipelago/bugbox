@@ -36,7 +36,28 @@
       {% endif %}
       
       <h3 class="mb-0"><span class="fw-bold">{{issue['title']}}</span> #{{issue['id']}}</h3>
-      <p class="fs-6">{% for team_id in issue_teams%} {{teamBadge(team_id)}} {% endfor %}</p>
+      <p class="fs-6">
+        {% for team_id in issue_teams %} 
+          {% if team_id == g.user['team_id'] and g.user['admin_level'] == 1 %}
+            <span class="badge text-light shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
+              {{TEAMS[team_id]}} 
+              <a href="{{ url_for('issue.remove_issue_team', issue_id=issue['id'], team_id=team_id) }}">
+                <i class="bi bi-x list-group-item-action"></i></a>  
+            </span>
+          {% else %}
+            {{teamBadge(team_id)}}           
+          {% endif %}
+        {% endfor %}
+        {% if g.user['team_id'] not in issue_teams and g.user['admin_level'] > 0 %}
+          <span class="badge shadow-sm border border-secondary">
+            <a href="{{ url_for('issue.add_issue_team', issue_id=issue['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
+              <i class="bi bi-plus list-group-item-action"></i>
+              Add tag: {{TEAMS[g.user['team_id']]}} 
+            </a>
+          </span>
+        {% endif %}
+      </p>
+      
 
       {% for c in comments %}
       <div class="d-flex">

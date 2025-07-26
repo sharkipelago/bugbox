@@ -41,7 +41,6 @@ def dml_operation(db_func):
         db_func(*args, cursor=cursor, **kwargs)
         cursor.close()
         db.commit()
-        return None
     return wrapper
 
 
@@ -189,9 +188,9 @@ def get_issue_teams(issue_id = None):
         ' FROM issue_team i_t'
     ).fetchall()
     
-    issue_teams = defaultdict(set)
+    issue_teams = defaultdict(list)
     for i_t in issue_teams_query:
-        issue_teams[i_t['issue_id']].add(i_t['team_id'])
+        issue_teams[i_t['issue_id']].append(i_t['team_id'])
    
     if issue_id:
         return issue_teams[issue_id]
@@ -207,9 +206,26 @@ def get_assignees(issue_id):
     return [{'id': a['assignee_id'], 'name': a['assignee_name'] } for a in assignee_query]
 
 @dml_operation
-def update_issue_progress(issue_id, new_progress, cursor):
+def update_issue_progress(issue_id, new_progress, cursor=None):
     cursor.execute(
         'UPDATE issue SET progress = ?'
         ' WHERE id = ?',
         (new_progress, issue_id)
+    )
+
+@dml_operation
+def delete_issue_team(issue_id, team_id, cursor=None):
+    cursor.execute(
+        'DELETE FROM issue_team'
+        ' WHERE issue_id = ? AND team_id = ?', 
+        (issue_id, team_id)
+    )
+
+
+@dml_operation
+def insert_issue_team(issue_id, team_id, cursor=None):
+    cursor.execute(
+        'INSERT INTO issue_team (issue_id, team_id)'
+        ' VALUES (?, ?)', 
+        (issue_id, team_id)
     )

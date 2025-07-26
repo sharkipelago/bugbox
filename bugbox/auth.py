@@ -127,21 +127,17 @@ def logout():
 
 def login_required(view):
     @functools.wraps(view)
-    def wrapped_view(**kwargs):
+    def login_wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
-
         return view(**kwargs)
+    return login_wrapped_view
 
-    return wrapped_view
-
-# TODO move this to an admin.py
+# # TODO move this to an admin.py
 def team_lead_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user["admin_level"] < 1:
-            return redirect(url_for('admin.denied'))
-
-        return view(**kwargs)
-
+        if g.user["admin_level"] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] == kwargs.get('team_id'):
+            return view(**kwargs)
+        return redirect(url_for('admin.denied'))
     return wrapped_view
