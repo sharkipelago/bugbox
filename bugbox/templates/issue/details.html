@@ -134,19 +134,21 @@
           <span class="btn btn-info btn-sm" data-bs-toggle="collapse" data-bs-target="#updateUserCollapse" aria-expanded="false">Add</span>
         {% endif %}
       </h4>  
-      <div class="collapse" id="updateUserCollapse">
-        <ul class="list-group">
-          <!-- need list because map will return a generator as all jinja functions that oppearte on lists return generators -->
-          {% for user in users | selectattr('team_id', 'equalto', issue['team_id']) | rejectattr('id', 'in', assignees|map(attribute='id')|list) %}
-            <a class="list-group-item list-group-item-action" href="{{ url_for('issue.add_assignee', issue_id=issue['id'], user_id=user['id']) }}">{{user['first_name']}} {{user['last_name']}} </a>
-          {% else %}
-            <li class="list-group-item ">No more assignable users</li>
-          {% endfor %}
-        </ul>
-      </div>
+      {% if edit_level == 2 and issue['progress'] < 2%}
+        <div class="collapse" id="updateUserCollapse">
+          <ul class="list-group">
+            <!-- need list because map will return a generator as all jinja functions that oppearte on lists return generators -->
+            {% for user in users | selectattr('team_id', 'equalto', g.user['team_id']) | rejectattr('id', 'in', assignees|map(attribute='id')|list) %}
+              <a class="list-group-item list-group-item-action" href="{{ url_for('issue.add_assignee', issue_id=issue['id'], user_id=user['id']) }}">{{user['first_name']}} {{user['last_name']}} </a>
+            {% else %}
+              <li class="list-group-item ">No more assignable users</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
       <hr>
       {% for a in assignees %}
-        {% if edit_level == 2 and issue['progress'] < 2 %}
+        {% if edit_level == 2 and issue['progress'] < 2 and a['team_id'] == g.user['team_id'] %}
           <a class="list-group-item " href="{{ url_for('issue.remove_assignee', issue_id=issue['id'], assignee_id=a['id']) }}">
             {{ a['name'] }} <i class="bi bi-x list-group-item-action"></i></a>
         {% else %}

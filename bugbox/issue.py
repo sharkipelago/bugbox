@@ -2,8 +2,8 @@ import functools
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
 
-from bugbox.auth import login_required, team_lead_required
-from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team
+from bugbox.auth import login_required, team_lead_required, same_team_required
+from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team, delete_assignment
 
 bp = Blueprint('issue', __name__)
 
@@ -48,9 +48,6 @@ def get_assignments():
         'SELECT a.id, issue_id, assignee_id, (first_name || " " || last_name) as assignee_name'
         ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
     ).fetchall()
-
-def delete_assignment(cursor, issue_id, assignee_id):
-    cursor.execute('DELETE FROM assignment WHERE issue_id = ? AND assignee_id = ?', (issue_id, assignee_id))
 
 @bp.route('/')
 @login_required
@@ -109,8 +106,15 @@ def get_issue(id):
 @bp.route('/<int:issue_id>/details')
 @login_required
 def details(issue_id):
-    issue = get_issue(issue_id)
-    return render_template('issue/details.html', issue=issue, issue_teams=get_issue_teams(issue_id), assignees=get_assignees(issue_id), users=get_users(), comments=get_comments(issue_id), edit_level=get_edit_level(issue_id))
+    print(get_assignees(issue_id))
+    return render_template('issue/details.html', 
+                           issue=get_issue(issue_id), 
+                           issue_teams=get_issue_teams(issue_id), 
+                           assignees=get_assignees(issue_id), 
+                           users=get_users(), 
+                           comments=get_comments(issue_id),
+                           edit_level=get_edit_level(issue_id)
+    )
 
 @bp.route('/<int:issue_id>/add-comment', methods=('POST',))
 @login_required
@@ -163,6 +167,7 @@ def delete(issue_id):
 @bp.route('/<int:issue_id>/<int:user_id>/add-assignee', methods=('GET',))
 @login_required
 @modify_perms_required
+@same_team_required
 def add_assignee(issue_id, user_id):
     assert get_user(user_id)['team_id'] in get_issue_teams(issue_id)
 
@@ -175,13 +180,10 @@ def add_assignee(issue_id, user_id):
 @bp.route('/<int:issue_id>/<int:assignee_id>/remove-assignee', methods=('GET',))
 @login_required
 @modify_perms_required
+@same_team_required
 def remove_assignee(issue_id, assignee_id):
     assert get_user(assignee_id)['team_id'] in get_issue_teams(issue_id)
-
-    db = get_db()
-    cursor = db.cursor()
-    delete_assignment(cursor, issue_id, assignee_id)
-    db.commit()
+    delete_assignment(issue_id, assignee_id)
     return redirect(url_for('issue.details', issue_id=issue_id))
 
 @bp.route('/<int:issue_id>/<int:submitter_id>/submit-issue', methods=('POST',))
@@ -214,11 +216,15 @@ def reopen_issue(issue_id, reopener_id):
     insert_comment(-1, issue_id, status_update_content)
     return redirect(url_for('issue.index'))
 
+# TODO Make a modal pop up warning about removing all assignees
 @bp.route('/<int:issue_id>/<int:team_id>/remove-issue-team')
 @login_required
 @team_lead_required
 def remove_issue_team(issue_id, team_id):
     assert team_id in get_issue_teams(issue_id)
+    for a in get_assignees(issue_id):
+        if a['team_id'] == team_id:
+            delete_assignment(issue_id, a['id'])
     delete_issue_team(issue_id, team_id)
     return redirect(url_for('issue.details', issue_id=issue_id))
 

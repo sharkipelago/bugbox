@@ -7,7 +7,7 @@
   <!-- DataTales Example -->
   <div class="card shadow mb-4">
     <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary">Users</h6>
+      <h6 class="m-0 font-weight-bold text-primary">Collaborators</h6>
     </div>
     <div class="card-body">
       <div class="table-responsive">
@@ -16,7 +16,9 @@
             <tr>
               <th>Name</th>
               <th>Team</th>
-              <th></th>
+              {% if g.user['admin_level'] > 0 %}
+                <th>Actions</th>
+              {% endif %}
             </tr>
           </thead>
           <tbody>
@@ -30,14 +32,31 @@
                   {% if user['team_id'] is none %}
                     <span class="badge text-light text-bg-secondary shadow-sm">Unassigned</span>
                   {% endif %}
-
                   {{teamBadge(user['team_id'])}}
                   {% if user["admin_level"] == 1 %}
                     {{teamLeadBadge()}}
                   {% endif %}  
-
-                  
                 </td>
+                {% if g.user['admin_level'] == 1 %}
+                  <td>
+                    {% if user['team_id'] is none %}
+                      <span class="badge shadow-sm border border-secondary">
+                        <a href="{{ url_for('collab.assign_team', user_id=user['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
+                          <i class="bi bi-diamond-fill"></i>
+                          Claim for team: {{TEAMS[g.user['team_id']]}} 
+                        </a>
+                      </span>
+                    {% endif %}
+                    {% if user['team_id'] == g.user['team_id'] and user['id'] != g.user['id'] %}
+                      <span class="badge shadow-sm border border-secondary">
+                        <a href="{{ url_for('collab.remove_from_team', user_id=user['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
+                          <i class="bi bi-x"></i>
+                          Remove From Team
+                        </a>
+                      </span>
+                    {% endif %}
+                  </td>
+                {% endif %}
               </tr>
             {% endfor %}
           </tbody>

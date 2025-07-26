@@ -21,7 +21,10 @@ DEFAULT_USERS = [
     # User
     ("hachi","hachikoko", "Chūken", "Hachikō", 0, TEAM_IDS["Backend"]),
     ("harambe","rememberharambe", "Harambe", "Van Coppenolle", 0, TEAM_IDS["Mobile"]),
-    ("laika","laikaspaceneighbor", "Laika", " Kudryavka", 0, TEAM_IDS["QA"])
+    ("laika","laikaspaceneighbor", "Laika", "Kudryavka", 0, TEAM_IDS["QA"]),
+    ("simba","ifittouchesthesun", "King", "Simba", 0, None),
+    # Team Lead 
+    ("pomgpriv", "computeroverride", "Private", "Madagascar", 1, TEAM_IDS['Backend']),
 ]
 
 DEFAULT_ISSUES = [
@@ -198,12 +201,21 @@ def get_issue_teams(issue_id = None):
 
 def get_assignees(issue_id):
     assignee_query = get_db().execute(
-        'SELECT a.assignee_id, (u.first_name || " " || u.last_name) as assignee_name'
+        'SELECT *, (u.first_name || " " || u.last_name) as assignee_name'
         ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
         ' WHERE a.issue_id = ?',
         (issue_id,)
     ).fetchall()
-    return [{'id': a['assignee_id'], 'name': a['assignee_name'] } for a in assignee_query]
+    return [{'id': a['assignee_id'], 'name': a['assignee_name'], 'team_id': a['team_id'] } for a in assignee_query]
+
+# def get_assignments(user_id):
+#     assignment_query = get_db().execute(
+#         'SELECT *'
+#         ' FROM assignment a'
+#         ' WHERE u.user_id = ?',
+#         (user_id,)
+#     ).fetchall()
+#     return [a['issue_id'] for a in assignment_query]
 
 @dml_operation
 def update_issue_progress(issue_id, new_progress, cursor=None):
@@ -228,4 +240,21 @@ def insert_issue_team(issue_id, team_id, cursor=None):
         'INSERT INTO issue_team (issue_id, team_id)'
         ' VALUES (?, ?)', 
         (issue_id, team_id)
+    )
+
+@dml_operation
+def delete_assignment(issue_id, assignee_id, cursor=None):
+    cursor.execute('DELETE FROM assignment WHERE issue_id = ? AND assignee_id = ?', (issue_id, assignee_id))
+
+@dml_operation
+def delete_all_assignments(user_id, cursor=None):
+    print(user_id)
+    cursor.execute('DELETE FROM assignment WHERE assignee_id = ?', (user_id, ))
+
+@dml_operation
+def update_user_team(user_id, team_id, cursor=None):
+    cursor.execute(
+        'UPDATE user SET team_id = ?'
+        ' WHERE id = ?',
+        (team_id, user_id)
     )

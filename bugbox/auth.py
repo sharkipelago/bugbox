@@ -3,7 +3,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, sessi
 from werkzeug.security import check_password_hash, generate_password_hash
 from wtforms import Form, StringField, PasswordField, SubmitField, validators
 
-from bugbox.db import get_db, get_issue_teams
+from bugbox.db import get_db, get_issue_teams, get_user
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -138,6 +138,14 @@ def team_lead_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user["admin_level"] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] == kwargs.get('team_id'):
+            return view(**kwargs)
+        return redirect(url_for('admin.denied'))
+    return wrapped_view
+
+def same_team_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user["admin_level"] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] == get_user(kwargs.get('user_id'))['team_id']:
             return view(**kwargs)
         return redirect(url_for('admin.denied'))
     return wrapped_view
