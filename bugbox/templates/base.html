@@ -21,7 +21,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<link href="https://cdn.lineicons.com/5.0/lineicons.css" rel="stylesheet" />
-	    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 
 		<title> {{self.title()}} - Bugbox</title>
 		{{ bootstrap.load_css() }}
@@ -106,12 +106,12 @@
 							<span class="d-none d-sm-inline mx-1">{{g.user.first_name}}</span>
 						</a>
 						<ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-							<li><a class="dropdown-item" href="#">New project...</a></li>
+							<!-- <li><a class="dropdown-item" href="#">New project...</a></li>
 							<li><a class="dropdown-item" href="#">Settings</a></li>
 							<li><a class="dropdown-item" href="#">Profile</a></li>
 							<li>
 								<hr class="dropdown-divider">
-							</li>
+							</li> -->
 							<li>							
                                 <a class="dropdown-item" href="#"  data-bs-toggle="modal"="modal" data-bs-target="#logoutModal">
                                     <i class="bi-box-arrow-right"></i> Logout</a>		
@@ -123,7 +123,7 @@
 			<!-- End of Desktop Sidebar -->
 
 			<!-- Main Content -->
-			<div class="col d-flex flex-column px-0 h vh-100">
+			<div class="col d-flex flex-column px-0 h vh-100 bg-off-white">
 				<!-- Topbar -->
 				<nav class="navbar navbar-expand mb-4 static-top shadow">
 
@@ -300,7 +300,7 @@
 							<!-- Dropdown - User Information -->
 							<div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
 								aria-labelledby="userDropdown">
-								<a class="dropdown-item" href="#">
+								<!-- <a class="dropdown-item" href="#">
 									<i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
 									Profile
 								</a>
@@ -312,7 +312,7 @@
 									<i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
 									Activity Log
 								</a>
-								<div class="dropdown-divider"></div>
+								<div class="dropdown-divider"></div> -->
 								<a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
 									<i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
 									Logout

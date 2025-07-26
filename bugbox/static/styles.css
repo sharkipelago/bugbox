@@ -32,3 +32,14 @@
 .text-bg-devops{
   background-color: #90BE6D;
 }
+
+.bg-off-white {
+  background-color: #fbf7f5
+}
+
+.bg-login-image {
+  background: url(/static/dragonfly.jpg);
+  background-size: cover;
+  background-position: 15% 30%;
+  background-repeat: no-repeat; /* Prevents image repetition */
+}

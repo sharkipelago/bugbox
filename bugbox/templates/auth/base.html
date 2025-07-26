@@ -7,6 +7,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 		<title>{% block title %}{% endblock %} - Bugbox</title>
 		{{ bootstrap.load_css() }}
 		{{ bootstrap.load_icon_font_css() }}
@@ -20,8 +21,9 @@
 						<div class="card-body p-0">
 							<!-- Nested Row within Card Body -->
 							<div class="row">
-								<div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
-								<div class="col-lg-6">
+								<div class="col-lg-6 d-none d-lg-block bg-login-image rounded-start">
+                </div>
+								<div class="col-lg-6 bg-off-white rounded-end">
 									<div class="text-center p-5">
 										{% for message in get_flashed_messages(category_filter=['success']) %}
 										<div class="alert alert-success py-2">
