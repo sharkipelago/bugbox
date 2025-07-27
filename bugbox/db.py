@@ -264,3 +264,11 @@ def update_user_team(user_id, team_id, cursor=None):
         ' WHERE id = ?',
         (team_id, user_id)
     )
+
+@dml_operation
+def update_admin_level(user_id, admin_level, cursor=None):
+    cursor.execute(
+        'UPDATE user SET admin_level = ?'
+        ' WHERE id = ?',
+        (admin_level, user_id)
+    )
