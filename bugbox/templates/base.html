@@ -42,7 +42,7 @@
 		{{ bootstrap.load_css() }}
 		{{ bootstrap.load_icon_font_css() }}
 	</head>
-	<body class="container-fluid">
+	<body class="container-fluid overflow-y-hidden">
 		<!-- Page Wrapper -->
 		<div class="row">
       <!-- TODO: Update mobile sidebar -->
@@ -138,7 +138,7 @@
 			<!-- End of Desktop Sidebar -->
 
 			<!-- Main Content -->
-			<div class="col d-flex flex-column px-0 overflow-y-auto bg-off-white">
+			<div class="col d-flex flex-column px-0 bg-off-white">
 				<!-- Topbar -->
 				<nav class="navbar navbar-expand mb-4 static-top shadow">
 
@@ -180,8 +180,8 @@
 				</nav>
 				<!-- End of Topbar -->
 
-				<!-- Begin Page Content -->
-				<div class="container-fluid d-flex flex-column flex-grow-1">
+				<!-- Begin Page Content --> 
+				<div class="container-fluid d-flex overflow-y-auto flex-column flex-grow-1" style="max-height: 89vh;">
 
 					<!-- Page Heading
 					<div class="d-sm-flex align-items-center justify-content-between mb-4">
