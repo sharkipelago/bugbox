@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from flask_bootstrap import Bootstrap5
 
-from bugbox.team import TEAMS
+from bugbox.team import TEAMS, TEAM_IDS
 
 def create_app(test_config=None):
     # create and configure the app
@@ -27,7 +27,7 @@ def create_app(test_config=None):
 
     # pass teams object to every template
     def inject_data():
-        return dict(TEAMS=TEAMS)
+        return dict(TEAMS=TEAMS, TEAM_IDS=TEAM_IDS)
     app.context_processor(inject_data)
 
 

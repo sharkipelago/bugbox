@@ -52,7 +52,7 @@ CREATE TABLE team (
 CREATE TABLE issue_team (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	issue_id INTEGER NOT NULL,
-	team_id INTEGER CHECK (0 < team_id), -- make sure Admin Team is never in issue_team
+	team_id INTEGER NOT NULL,
 	CONSTRAINT issue_team UNIQUE (issue_id, team_id),
 	FOREIGN KEY (issue_id) REFERENCES issue (id),
 	FOREIGN KEY (team_id) REFERENCES user (id)

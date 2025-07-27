@@ -149,3 +149,11 @@ def same_team_required(view):
             return view(**kwargs)
         return redirect(url_for('admin.denied'))
     return wrapped_view
+
+def admin_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user["admin_level"] == 2:
+            return view(**kwargs)
+        return redirect(url_for('admin.denied'))
+    return wrapped_view

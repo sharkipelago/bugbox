@@ -26,7 +26,7 @@
   <input class="btn btn-danger me-auto" type="submit" value="Delete Issue" form="delete-form" onclick="return confirm('Are you sure?');">
 {% endmacro %}
 
-{% block title %}Edit "{{ issue['title'] }}" {{issue['progress'] }}{% endblock %}
+{% block title %}Edit "{{ issue['title'] }}" {% endblock %}
 
 {% block content %}
   <div class="row">
@@ -90,7 +90,7 @@
      
       {% endfor %}
       {% if edit_level > 0 and issue['progress'] < 2 %}
-        <form id="add-comment-form" action="{{ url_for('issue.add_comment', issue_id=issue['id'])}}" method="post"</form> 
+        <form id="add-comment-form" action="{{ url_for('issue.add_comment', issue_id=issue['id'])}}" method="post"> 
           <label for="content" class="form-label">Add a comment</label>
           <textarea name="content" id="content" class="form-control mb-2" required  
             {% if issue['progress'] > 0 and edit_level < 2 %}

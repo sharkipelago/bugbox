@@ -2,10 +2,18 @@ import functools
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
 
-from bugbox.auth import login_required, team_lead_required, same_team_required
+from bugbox.auth import login_required, team_lead_required, same_team_required, admin_required
 from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team, delete_assignment
 
 bp = Blueprint('issue', __name__)
+
+from bugbox.team import TEAM_IDS
+DEAFULT_ADMIN_STATE = {
+    'teams': [],
+    'assignees': []
+}
+admin_create_state = 2
+
 
 # how much can this user edit this issue
 def get_edit_level(issue_id):
@@ -67,9 +75,18 @@ def index():
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
+    global admin_create_state
+
     if request.method == 'POST':
+        print(request.form)
         title = request.form['title']
-        body = request.form['body']
+        description = request.form['desc']
+        initial_assignees = [int(k.split('-')[-1]) for k in request.form.keys() if k.startswith('assignee')]
+        if g.user['admin_level'] == 0:
+            initial_assignees = [g.user['id']] 
+        initial_teams = None
+        if g.user['admin_level'] == 2:
+            initial_teams = list(set([get_user(i_a)['team_id'] for i_a in initial_assignees]))
         error = None
 
         if not title:
@@ -78,13 +95,18 @@ def create():
         if error is not None:
             flash(error)
         else:
-            initial_assignees = []
-            if 'self-assign' in request.form:
-                initial_assignees.append( g.user['id']) 
-            create_issue(g.user['id'], title, body, initial_assignees)
+            create_issue(g.user['id'], title, description, initial_assignees, initial_teams)
+            # admin_create_state.clear()
             return redirect(url_for('issue.index'))
 
-    return render_template('issue/create.html')
+    subordinate_users = None
+    if g.user['admin_level'] == 1:
+        subordinate_users = get_users(g.user['team_id'])
+    elif g.user['admin_level'] == 2:
+        subordinate_users = get_users()
+
+    return render_template('issue/create.html', assignable_users=subordinate_users)
+
 
 def get_issue(id):
     issue = get_db().execute(

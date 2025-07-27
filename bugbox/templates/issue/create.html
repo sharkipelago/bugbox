@@ -4,12 +4,61 @@
 
 {% block content %}
   <form method="post">
-    <label for="title" class="form-label">Title</label>
-    <input name="title" id="title" class="form-control" required autofocus>
-    <label for="body">Body</label>
-    <textarea name="body" id="body" class="form-control mb-2">{{ request.form['body'] }}</textarea>
-    <input name="self-assign" id="self-assign" class="form-check-input" type="checkbox" checked>
-    <label class="form-check-label" for="self-assign">Self Assign?</label>
-    <input type="submit" value="Submit" class="btn btn-primary">
+    <div class="row" >
+      <div class="col flex-grow-1 text-break">
+        <label class="fw-bold">Issue Title</label>
+        <input name="title" id="title" class="form-control" required autofocus>
+        <label for="desc">Description</label>
+        <textarea name="desc" id="desc" class="form-control mb-2" style="min-height:40vh;" required>{{ request.form['description'] }}</textarea>
+        <div class="d-flex">
+          <input type="submit" value="Submit" class="btn btn-primary ms-auto">
+        </div>
+      </div>
+      <!-- Assignees & Teams -->
+      <div class="col-4 overflow-y-auto" style="max-height: 80vh;">
+        <h4>Assignees</h4>  
+        <hr>
+        {% if g.user['admin_level'] == 1 %}
+          <ul class="list-group my-2">
+            {% for user in assignable_users | sort(attribute='admin_level', reverse=True)%}
+              <li class="list-group-item">
+                <div class="form-check">
+                  <input class="form-check-input " type="checkbox" value="" name="assignee-{{user['id']}}" id="assignee-{{user['id']}}" {% if g.user['id'] == user['id'] %} checked {% endif %}>
+                  <label class="form-check-label d-flex" for="assigned-{{user['id']}}">
+                    {{user['first_name']}} {{user['last_name']}} 
+                    <span class="ms-auto"> {% if user['admin_level'] == 1 %} {{teamLeadBadge()}} {% endif %} </span>
+                  </label>
+                </div>
+              </li>
+            {% endfor %}
+        {% endif %}
+
+        {% if g.user['admin_level'] == 2 %}
+          {% for team in TEAMS %}
+            {{teamBadge(TEAM_IDS[team])}}
+            <ul class="list-group my-2">
+              {% for user in assignable_users| selectattr('team_id', 'equalto', TEAM_IDS[team]) | sort(attribute='admin_level', reverse=True)%}
+                <li class="list-group-item text-bg-{{team|lower}} {% if team != 'Admin' %} text-light {% endif %}">
+                  <div class="form-check">
+                    <input class="form-check-input " type="checkbox" value="" name="assignee-{{user['id']}}" id="assignee-{{user['id']}}" {% if g.user['id'] == user['id'] %} checked {% endif %}>
+                    <label class="form-check-label d-flex" for="assignee-{{user['id']}}">
+                      {{user['first_name']}} {{user['last_name']}} 
+                      <span class="ms-auto"> {% if user['admin_level'] == 1 %} {{teamLeadBadge()}} {% endif %} </span>
+                    </label>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endfor %}
+        {% endif %}
+          <!-- <div class="list-group">
+            {% for team in TEAMS %}
+              <a href="#" class="list-group-item list-group-item-action">A second link item</a>
+              <a href="#" class="list-group-item list-group-item-action">A third link item</a>
+              <a href="#" class="list-group-item list-group-item-action">A fourth link item</a>
+              <a href="#" class="list-group-item list-group-item-action disabled" aria-disabled="true">A disabled link item</a>
+            {% endfor %}   
+          </div> -->
+    </div>
   </form>
 {% endblock %}

@@ -8,9 +8,7 @@ from werkzeug.security import generate_password_hash
 import click
 from flask import current_app, g
 
-from bugbox.team import TEAMS
-
-TEAM_IDS = {team_name: team_id for team_id, team_name in enumerate(TEAMS)}
+from bugbox.team import TEAM_IDS
 
 DEFAULT_USERS = [
     # Admin
@@ -108,7 +106,7 @@ def create_user(username, password, first_name, last_name, admin_level, team=Non
     cursor.close()
     db.commit()
 
-def create_issue(author_id, title, initial_comment, assignee_ids = []):
+def create_issue(author_id, title, initial_comment, assignee_ids = [], team_ids = None):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
@@ -117,11 +115,13 @@ def create_issue(author_id, title, initial_comment, assignee_ids = []):
         (author_id, title)
     )
     issue_id = cursor.lastrowid
-    cursor.execute(
-        'INSERT INTO issue_team (issue_id, team_id)'
-        ' VALUES (?, ?)',
-        (issue_id, get_user(author_id)['team_id'])
-    )
+
+    if not team_ids:
+        insert_issue_team(issue_id, get_user(author_id)['team_id'])
+    else:
+        for t_id in team_ids:
+            insert_issue_team(issue_id, t_id)
+
     insert_comment(author_id, issue_id, initial_comment, cursor)
     for a in assignee_ids:
         insert_assignment(cursor, issue_id, a)
@@ -136,7 +136,13 @@ def get_user(user_id):
         (user_id,)
     ).fetchone()  
 
-def get_users():
+def get_users(team_id = None):
+    if team_id:
+        return get_db().execute(
+            'SELECT * FROM user u WHERE u.team_id = ?',
+            (team_id, )
+        ).fetchall() 
+    
     return get_db().execute(
         'SELECT *'
         ' FROM user u LEFT JOIN team t ON u.team_id = t.id'
@@ -155,7 +161,7 @@ def get_comments(issue_id):
 # Only executes not resposible for committing or anything
 def insert_assignment(cursor, issue_id, assignee_id):
     # print(get_user(assignee_id)['team_id'], get_issue_teams()[issue_id])
-    assert get_user(assignee_id)['team_id'] in get_issue_teams()[issue_id] 
+    assert get_user(assignee_id)['team_id'] in get_issue_teams()[issue_id] or get_user(assignee_id)['admin_level'] == 2
     cursor.execute(
         'INSERT INTO assignment (issue_id, assignee_id)'
         ' VALUES (?, ?)',
