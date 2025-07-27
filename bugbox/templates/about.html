@@ -3,35 +3,33 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-<p>
-Hello,
-
-This is an issue/bug tracking application. After registering/loging in with an account you can create and work on issues accross three differenet permissions levels.
-
-<h6>Regular User</h6>
+<p>Hi, thanks for checking out the <a class="fst-italic" href="https://github.com/sharkipelago/bugbox">Bugbox</a>. This is an issue/bug tracking application.</p>
+<p>The site is currently set up to simulate a software development project with five different sub-teams. Users can create issues, communicate with team members and submit issues to Team Leads for review. </p>
+<p>By default, all newly registered users are regular users that are not assigned to any sub-team. If you would like to view the app from the perspective of a Site Admin or Team Lead, click on one of the “login with x” links on the login page.</p>
+<p>The following are features for each privilege level:</p>
+<h6 class="fw-bold">Regular User</h6>
 <ul>
-  <li> X Create new issues </li>
-  <li> X Comment on issues they are assigned to or created </li>
-  <li> X Submit issues for review </li>
+  <li>Create new issues (by default Regular Users assign themselves to any issues created)</li>
+  <li>Comment on assigned issues </li>
+  <li>Submit assigned issues for review </li>
 </ul>
-
-<h6>Team Lead</h6>
+<h6 class="fw-bold">Team Lead</h6>
 <ul>
-  <li> X Everything a regular user can</li>
-  <li> X Add or remove their team label from an issue</li>
-  <li> X Claim users with no team as part of their Team</li>
-  <li> X Remove users from their team</li>
-  <li> X Review issues within their team</li>
-  <li> X Assign members of their team to work on an issue</li>
-  <li> X Delete issues in their team</li>
+  <li>Everything a Regular User can do </li>
+  <li>Add/remove their team label from an issue </li>
+  <li>Claim users that do not belong to any sub-team </li>
+  <li>Remove users from their team </li>
+  <li>Assign members of their team to an issue</li>
+  <li>Delete issues with their team label</li>
+  <li>Review submitted issues with their team label</li>
 </ul>
-<h6>Admin</h6>
-  <li>Everything a team lead can do (accross all teams)</li>
-  <li>Promote a user to team Lead</li>
-  <li>Demote a team lead to user</li>
-  <li>Switch the team of any user/team lead</li>
-  <li>delete user (may be annoying withu updating comments and stuff)</li>
-</p>
+<h6 class="fw-bold">Site Admin</h6>
+<ul>
+  <li>Everything a Team Lead can do across all sub-teams</li>
+  <li>Promote a Regular User to Team Lead</li>
+  <li>Demote a Team Lead to Regular User</li>
+  <li>Switch the team of any user</li>
+</ul>
 
 <h6> Others</h6>
   <li>Search Issues in searchbar</li>
