@@ -40,20 +40,49 @@
                 {% if g.user['admin_level'] == 1 %}
                   <td>
                     {% if user['team_id'] is none %}
-                      <span class="badge shadow-sm border border-secondary">
-                        <a href="{{ url_for('collab.assign_team', user_id=user['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
-                          <i class="bi bi-diamond-fill"></i>
-                          Claim for team: {{TEAMS[g.user['team_id']]}} 
-                        </a>
-                      </span>
+                      <a href="{{ url_for('collab.assign_team', user_id=user['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
+                        <i class="bi bi-diamond-fill"></i>
+                        Claim for team: {{TEAMS[g.user['team_id']]}} 
+                      </a>
                     {% endif %}
                     {% if user['team_id'] == g.user['team_id'] and user['id'] != g.user['id'] %}
-                      <span class="badge shadow-sm border border-secondary">
-                        <a href="{{ url_for('collab.remove_from_team', user_id=user['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
-                          <i class="bi bi-x"></i>
-                          Remove from team
-                        </a>
-                      </span>
+                      <a href="{{ url_for('collab.remove_from_team', user_id=user['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
+                        <i class="bi bi-x"></i>
+                        Remove from team
+                      </a>
+                    {% endif %}
+                  </td>
+                {% elif g.user['admin_level'] == 2 %}
+                  <td>
+                    {% if user['admin_level'] != 2 %}
+                      <div class="dropdown">
+                          <a href="#" class="text-decoration-none text-secondary " 
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">             
+                            {% if user['team_id'] is none %} 
+                              <i class="bi bi-diamond-fill"></i> Assign team
+                            {% else %}
+                              <i class="bi bi-arrow-left-right"></i> Change team
+                            {% endif %} 
+                          </a>
+                        <ul class="dropdown-menu dropdown-menu-end" style="min-width: 5px;">
+                          {% for team in TEAMS | reject('equalto', 'Admin') | reject('equalto', TEAMS[user['team_id']]) |list %}
+                            <li>
+                              <a class="dropdown-item" href="{{ url_for('collab.assign_team', user_id=user['id'], team_id=TEAM_IDS[team]) }}">
+                                {{teamBadge(TEAM_IDS[team])}}
+                              </a>
+                            </li>
+                          {% endfor %}
+                          {% if user['team_id'] is not none %}
+                            <li>
+                              <a class="dropdown-item" href="{{ url_for('collab.remove_from_team', user_id=user['id'], team_id=user['team_id']) }}">
+                                <span class="badge text-light text-bg-secondary shadow-sm">Unassigned</span>
+                              </a>
+                            </li>
+                          {% endif %}
+                        </ul>
+                      </div>
+
+
                     {% endif %}
                   </td>
                 {% endif %}
