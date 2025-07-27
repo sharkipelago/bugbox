@@ -14,6 +14,13 @@ DEAFULT_ADMIN_STATE = {
 }
 admin_create_state = 2
 
+def get_subordinate_users():
+    subordinate_users = None
+    if g.user['admin_level'] == 1:
+        subordinate_users = get_users(g.user['team_id'])
+    elif g.user['admin_level'] == 2:
+        subordinate_users = get_users()
+    return subordinate_users
 
 # how much can this user edit this issue
 def get_edit_level(issue_id):
@@ -99,13 +106,7 @@ def create():
             # admin_create_state.clear()
             return redirect(url_for('issue.index'))
 
-    subordinate_users = None
-    if g.user['admin_level'] == 1:
-        subordinate_users = get_users(g.user['team_id'])
-    elif g.user['admin_level'] == 2:
-        subordinate_users = get_users()
-
-    return render_template('issue/create.html', assignable_users=subordinate_users)
+    return render_template('issue/create.html', assignable_users=get_subordinate_users())
 
 
 def get_issue(id):
@@ -128,11 +129,11 @@ def get_issue(id):
 @bp.route('/<int:issue_id>/details')
 @login_required
 def details(issue_id):
-    print(get_assignees(issue_id))
     return render_template('issue/details.html', 
                            issue=get_issue(issue_id), 
                            issue_teams=get_issue_teams(issue_id), 
                            assignees=get_assignees(issue_id), 
+                           assignable_users=get_subordinate_users(),
                            users=get_users(), 
                            comments=get_comments(issue_id),
                            edit_level=get_edit_level(issue_id)
@@ -199,13 +200,13 @@ def add_assignee(issue_id, user_id):
     db.commit()
     return redirect(url_for('issue.details', issue_id=issue_id))
 
-@bp.route('/<int:issue_id>/<int:assignee_id>/remove-assignee', methods=('GET',))
+@bp.route('/<int:issue_id>/<int:user_id>/remove-assignee', methods=('GET',))
 @login_required
 @modify_perms_required
 @same_team_required
-def remove_assignee(issue_id, assignee_id):
-    assert get_user(assignee_id)['team_id'] in get_issue_teams(issue_id)
-    delete_assignment(issue_id, assignee_id)
+def remove_assignee(issue_id, user_id):
+    assert get_user(user_id)['team_id'] in get_issue_teams(issue_id)
+    delete_assignment(issue_id, user_id)
     return redirect(url_for('issue.details', issue_id=issue_id))
 
 @bp.route('/<int:issue_id>/<int:submitter_id>/submit-issue', methods=('POST',))

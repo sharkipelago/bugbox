@@ -38,24 +38,25 @@
       <h3 class="mb-0"><span class="fw-bold">{{issue['title']}}</span> #{{issue['id']}}</h3>
       <p class="fs-6">
         {% for team_id in issue_teams %} 
-          {% if team_id == g.user['team_id'] and g.user['admin_level'] == 1 %}
-            <span class="badge text-light shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
-              {{TEAMS[team_id]}} 
-              <a href="{{ url_for('issue.remove_issue_team', issue_id=issue['id'], team_id=team_id) }}">
-                <i class="bi bi-x list-group-item-action"></i></a>  
-            </span>
+          {% if team_id == g.user['team_id'] and g.user['admin_level'] == 1 or g.user['admin_level'] == 2%}
+            {{removableTeamBadge(team_id, url_for('issue.remove_issue_team', issue_id=issue['id'], team_id=team_id))}}
           {% else %}
             {{teamBadge(team_id)}}           
           {% endif %}
         {% endfor %}
-        {% if g.user['team_id'] not in issue_teams and g.user['admin_level'] > 0 %}
-          <span class="badge shadow-sm border border-secondary">
-            <a href="{{ url_for('issue.add_issue_team', issue_id=issue['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
-              <i class="bi bi-plus list-group-item-action"></i>
-              Add tag: {{TEAMS[g.user['team_id']]}} 
-            </a>
-          </span>
-        {% endif %}
+
+        {% for team in TEAMS %}
+          {% set team_id = TEAM_IDS[team] %}
+          {% if (g.user['admin_level'] == 2 and team_id not in issue_teams) or 
+            (g.user['admin_level'] == 1 and team_id not in issue_teams and g.user['team_id'] == team_id )%}
+            <span class="badge shadow-sm border border-secondary">
+              <a href="{{ url_for('issue.add_issue_team', issue_id=issue['id'], team_id=team_id) }}" class="text-decoration-none text-secondary">
+                <i class="bi bi-plus list-group-item-action"></i>
+                Add tag: {{TEAMS[team_id]}} 
+              </a>
+            </span>
+          {% endif %}
+        {% endfor %}
       </p>
       
 
@@ -128,7 +129,7 @@
       </div>
     </div>
     <!-- Assignees -->
-    <div class="col-3">
+    <div class="col-4">
       <h4 class="me-2">Assignees  
         {% if edit_level == 2 and issue['progress'] < 2%}
           <span class="btn btn-info btn-sm" data-bs-toggle="collapse" data-bs-target="#updateUserCollapse" aria-expanded="false">Add</span>
@@ -138,8 +139,10 @@
         <div class="collapse" id="updateUserCollapse">
           <ul class="list-group">
             <!-- need list because map will return a generator as all jinja functions that oppearte on lists return generators -->
-            {% for user in users | selectattr('team_id', 'equalto', g.user['team_id']) | rejectattr('id', 'in', assignees|map(attribute='id')|list) %}
-              <a class="list-group-item list-group-item-action" href="{{ url_for('issue.add_assignee', issue_id=issue['id'], user_id=user['id']) }}">{{user['first_name']}} {{user['last_name']}} </a>
+            {% for user in assignable_users | selectattr('team_id', 'in', issue_teams) | rejectattr('id', 'in', assignees|map(attribute='id')|list) %}
+              <a class="list-group-item list-group-item-action d-flex" href="{{ url_for('issue.add_assignee', issue_id=issue['id'], user_id=user['id']) }}">
+                {{user['first_name']}} {{user['last_name']}} {% if g.user['admin_level'] == 2 %} <span class="ms-auto ">{{teamBadge(user['team_id'])}} </span>{% endif %}
+              </a>
             {% else %}
               <li class="list-group-item ">No more assignable users</li>
             {% endfor %}
@@ -147,14 +150,20 @@
         </div>
         {% endif %}
       <hr>
-      {% for a in assignees %}
-        {% if edit_level == 2 and issue['progress'] < 2 and a['team_id'] == g.user['team_id'] %}
-          <a class="list-group-item " href="{{ url_for('issue.remove_assignee', issue_id=issue['id'], assignee_id=a['id']) }}">
-            {{ a['name'] }} <i class="bi bi-x list-group-item-action"></i></a>
+      <div class="list-group">
+        {% for a in assignees %}
+          {% if edit_level == 2 and issue['progress'] < 2 and a['team_id'] == g.user['team_id'] or g.user['admin_level'] == 2 %}
+            <a class="list-group-item d-flex " href="{{ url_for('issue.remove_assignee', issue_id=issue['id'], user_id=a['id']) }}">
+             <span class="me-auto"> {{ a['name'] }} </span> 
+             <span>{{teamBadge(a['team_id'])}}<i class="bi bi-x list-group-item-action"></i></span> 
+            </a>
+          {% else %}
+            <span class="list-group-item d-flex"><span class="me-auto">{{ a['name'] }}</span> {{teamBadge(a['team_id'])}} </span>        
+          {% endif %}
         {% else %}
-          <span class="list-group-item ">{{ a['name'] }} </span>        
-        {% endif %}
-      {% endfor %}
+            <span>No users currently assigned to this issue</span>
+        {% endfor %}
+      </div>
     </div>
   </div>
 {% endblock %}

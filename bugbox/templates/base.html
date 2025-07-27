@@ -10,6 +10,21 @@
   {% endif %}
 {% endmacro %}
 
+{% macro removableTeamBadge(team_id, href) -%}
+  {% if TEAMS[team_id] == 'Admin' %}
+    <span class="badge text-dark shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
+      {{TEAMS[team_id]}} 
+      <a href="{{href}}"">
+        <i class="bi bi-x text-dark   list-group-item-action"></i></a>  
+    </span>
+  {% else %}
+    <span class="badge text-light shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
+      {{TEAMS[team_id]}} 
+      <a href="{{href}}"">
+        <i class="bi bi-x text-light list-group-item-action"></i></a>  
+    </span>  {% endif %}
+{% endmacro %}
+
 {% macro teamLeadBadge() -%}
   <span class="badge text-dark text-bg-team-lead shadow-sm">Team Lead</span>
 {% endmacro %}

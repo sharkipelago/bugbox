@@ -24,11 +24,19 @@
 {% block header %} <a class="action" href="{{ url_for('issue.create') }}">New</a> {% endblock %}
 
 {% block content %}
-  <h2>Review</h2>
-  {{ issueComponent(issues|selectattr('progress', 'equalto', 1)) }}
-  <h2>Open</h2>
-  {{ issueComponent(issues|selectattr('progress', 'equalto', 0)) }}
-  <h2>Closed</h2>
-  {{ issueComponent(issues|selectattr('progress', 'equalto', 2)) }}
+  {% if issues|selectattr('progress', 'equalto', 1)|list|length > 0 %} 
+    <h2 class="fw-bold">Under Review</h2>
+    {{ issueComponent(issues|selectattr('progress', 'equalto', 1)) }}
+    <div class="mb-4"></div>
+  {% endif %}
+  {% if issues|selectattr('progress', 'equalto', 0)|list|length > 0 %} 
+    <h2 class="fw-bold">Open</h2>
+    {{ issueComponent(issues|selectattr('progress', 'equalto', 0)) }}
+    <div class="mb-4"></div>
+  {% endif %}
+  {% if issues|selectattr('progress', 'equalto', 2)|list|length > 0 %}
+    <h2 class="fw-bold">Closed</h2>
+    {{ issueComponent(issues|selectattr('progress', 'equalto', 2)) }}
+  {% endif %}
 
 {% endblock %}
