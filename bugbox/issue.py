@@ -64,9 +64,11 @@ def get_assignments():
         ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
     ).fetchall()
 
-@bp.route('/')
+@bp.route("/", defaults={"progress": 0})
+@bp.route('/<int:progress>/')
 @login_required
-def index():
+def index(progress=0):
+    assert progress == 0 or progress == 1 or progress == 2
     db = get_db()
     issues = db.execute(
         'SELECT *, (first_name || " " || last_name) AS author_name'
@@ -75,7 +77,12 @@ def index():
         ' ORDER BY created DESC'
     ).fetchall()
 
-    return render_template('issue/index.html', issues=issues, assignments=get_assignments(), issue_teams=get_issue_teams(), team_names=get_team_names())
+    return render_template('issue/index.html', 
+                           issues=issues, assignments=get_assignments(), 
+                           issue_teams=get_issue_teams(), 
+                           team_names=get_team_names(),
+                           progress=progress
+                           )
 
 # TODO When admin creates issue can manually assign teams
 # TODO when team lead creates issue, can choose to assign other teams besides own team
@@ -217,7 +224,7 @@ def submit_issue(issue_id, submitter_id):
     submitter = get_user(submitter_id)
     status_update_content = f'{submitter['first_name']} {submitter['last_name']} submitted this issue for review'
     insert_comment(-1, issue_id, status_update_content)
-    return redirect(url_for('issue.index'))
+    return redirect(url_for('issue.index',  progress=1))
 
 @bp.route('/<int:issue_id>/<int:closer_id>/close-issue', methods=('POST',))
 @login_required
@@ -227,7 +234,7 @@ def close_issue(issue_id, closer_id):
     closer = get_user(closer_id)
     status_update_content = f'{closer['first_name']} {closer['last_name']} closed this issue'
     insert_comment(-1, issue_id, status_update_content)
-    return redirect(url_for('issue.index'))
+    return redirect(url_for('issue.index', progress=2))
 
 @bp.route('/<int:issue_id>/<int:reopener_id>/reopen-issue', methods=('POST',))
 @login_required
@@ -237,7 +244,7 @@ def reopen_issue(issue_id, reopener_id):
     reopener = get_user(reopener_id)
     status_update_content = f'{reopener['first_name']} {reopener['last_name']} reopened this issue'
     insert_comment(-1, issue_id, status_update_content)
-    return redirect(url_for('issue.index'))
+    return redirect(url_for('issue.index', progress=0))
 
 # TODO Make a modal pop up warning about removing all assignees
 @bp.route('/<int:issue_id>/<int:team_id>/remove-issue-team')

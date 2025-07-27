@@ -21,22 +21,34 @@
 {%- endmacro %}
 
 {% block title %}Issues{% endblock %}
-{% block header %} <a class="action" href="{{ url_for('issue.create') }}">New</a> {% endblock %}
-
 {% block content %}
-  {% if issues|selectattr('progress', 'equalto', 1)|list|length > 0 %} 
-    <h2 class="fw-bold">Under Review</h2>
-    {{ issueComponent(issues|selectattr('progress', 'equalto', 1)) }}
-    <div class="mb-4"></div>
-  {% endif %}
-  {% if issues|selectattr('progress', 'equalto', 0)|list|length > 0 %} 
-    <h2 class="fw-bold">Open</h2>
-    {{ issueComponent(issues|selectattr('progress', 'equalto', 0)) }}
-    <div class="mb-4"></div>
-  {% endif %}
-  {% if issues|selectattr('progress', 'equalto', 2)|list|length > 0 %}
-    <h2 class="fw-bold">Closed</h2>
-    {{ issueComponent(issues|selectattr('progress', 'equalto', 2)) }}
+  <div class="d-flex align-items-start">
+    <h2 class="fw-bold">
+      {% if progress == 0 %}
+        Open Issues
+      {% elif progress == 1 %}
+        Issues Under Review
+      {% else %}
+        Closed Issues
+      {% endif %}
+    </h2>
+
+    <div class="small ms-auto btn-group">
+      <a href="{{url_for('issue.index', progress=0)}}" class="btn btn-outline-primary {% if progress == 0 %} active {% endif %}">Open</a>
+      <a href="{{url_for('issue.index', progress=1)}}" class="btn btn-outline-primary {% if progress == 1 %} active {% endif %}">Under Review</a>
+      <a href="{{url_for('issue.index', progress=2)}}" class="btn btn-outline-primary {% if progress == 2 %} active {% endif %}">Closed</a>
+    </div>
+  </div>
+
+  {{ issueComponent(issues|selectattr('progress', 'equalto', progress)) }}
+  {% if issues|selectattr('progress', 'equalto', progress)|list|length == 0 %}
+      {% if progress == 0 %}
+        No open issues...
+      {% elif progress == 1 %}
+        No issues currently under review
+      {% else %}
+        No closed issues 
+      {% endif %} 
   {% endif %}
 
 {% endblock %}
