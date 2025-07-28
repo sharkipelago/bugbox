@@ -90,6 +90,10 @@ def login():
 
     return render_template('auth/login.html', form=form)
 
+@bp.route('/denied')
+def denied():
+    return render_template('error/denied.html')
+
 # used to allow people looking at the sight to view the sight from admin perspective
 @bp.route('/admin-login')
 def guest_admin_login():
@@ -139,7 +143,7 @@ def team_lead_required(view):
     def wrapped_view(**kwargs):
         if g.user["admin_level"] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] == kwargs.get('team_id'):
             return view(**kwargs)
-        return redirect(url_for('admin.denied'))
+        return redirect(url_for('auth.denied'))
     return wrapped_view
 
 def same_team_required(view):
@@ -147,7 +151,7 @@ def same_team_required(view):
     def wrapped_view(**kwargs):
         if g.user["admin_level"] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] == get_user(kwargs.get('user_id'))['team_id']:
             return view(**kwargs)
-        return redirect(url_for('admin.denied'))
+        return redirect(url_for('auth.denied'))
     return wrapped_view
 
 def admin_required(view):
@@ -155,5 +159,5 @@ def admin_required(view):
     def wrapped_view(**kwargs):
         if g.user["admin_level"] == 2:
             return view(**kwargs)
-        return redirect(url_for('admin.denied'))
+        return redirect(url_for('auth.denied'))
     return wrapped_view

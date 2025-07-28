@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from flask_bootstrap import Bootstrap5
 
 from bugbox.team import TEAMS, TEAM_IDS
@@ -33,7 +33,12 @@ def create_app(test_config=None):
 
     app.config["BOOTSTRAP_BOOTSWATCH_THEME"] = 'sandstone' #https://bootswatch.com/
     Bootstrap5(app) # adds boostrap object https://bootstrap-flask.readthedocs.io/en/stable/basic/
-    
+
+    def handle_404_request(e):
+        return render_template('error/404.html')
+
+    app.register_error_handler(404, handle_404_request)
+
     from . import db
     db.init_app(app)
 

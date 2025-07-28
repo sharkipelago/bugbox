@@ -42,8 +42,7 @@ def modify_perms_required(view):
     def wrapped_view(**kwargs):
         if get_edit_level(kwargs.get('issue_id')) == 2:
             return view(**kwargs)
-        # TODO custom modify_perms denied page
-        return redirect(url_for('admin.denied'))
+        return redirect(url_for('auth.denied'))
 
     return wrapped_view
 # Can add updates on comment chain and submit issue
@@ -52,8 +51,7 @@ def contribute_perms_required(view):
     def wrapped_view(**kwargs):
         if get_edit_level(kwargs.get('issue_id')) > 0:
             return view(**kwargs)
-        # TODO custom modify_perms denied page
-        return redirect(url_for('admin.denied'))
+        return redirect(url_for('auth.denied'))
 
     return wrapped_view
 
