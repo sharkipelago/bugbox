@@ -64,9 +64,7 @@
 
       {% for c in comments %}
       <div class="d-flex">
-        <a>
-          <img src="https://github.com/mdo.png" alt="hugenerd" width="30" height="30" class="rounded-circle me-2">
-        </a>
+        {{pfp(filename=get_user(c['author_id'])['pfp_filename'])}}
         <div class="card mb-2 flex-grow-1">
           {% if c['author_id'] == -1 %}
             <div class="card-header bg-secondary text-black rounded-bottom">

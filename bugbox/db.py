@@ -1,7 +1,7 @@
 import sqlite3
 from datetime import datetime
 from collections import defaultdict
-import functools
+import functools, random
 
 from werkzeug.security import generate_password_hash
 
@@ -10,27 +10,36 @@ from flask import current_app, g
 
 from bugbox.team import TEAM_IDS
 
+DEFAULT_PFPS = [
+    'default-cicada.jpg',
+    'default-dragonfly.jpg',
+    'default-grasshopper.jpg',
+    'default-ladybug.jpg',
+    'default-stagbeetle.jpg'
+]
+
 DEFAULT_USERS = [
     # Admin
-    ("md", "mooodeng", "Moo", "Deng", 2), 
+    ("md", "mooodeng", "Moo", "Deng", 2, None, 'moo.jpg'), 
     # Team Lead
-    ("puxp", "punxsutawney", "Punxsutawney", "Phil", 1, TEAM_IDS["Mobile"]),
-    ("ohana", "experiment626", "Stitch", "Pelekai", 1, TEAM_IDS['DevOps']),
+    ("puxp", "punxsutawney", "Punxsutawney", "Phil", 1, TEAM_IDS["Mobile"], 'punxsutawney.jpg'),
+    ("ohana", "experiment626", "Stitch", "Pelekai", 1, TEAM_IDS['DevOps'], 'stitch.jpg'),
+    ("pomgpriv", "computeroverride", "Private", "", 1, TEAM_IDS['Backend'], 'private.jpg'),
     # User
-    ("hachi","hachikoko", "Chūken", "Hachikō", 0, TEAM_IDS["Backend"]),
-    ("harambe","rememberharambe", "Harambe", "Van Coppenolle", 0, TEAM_IDS["Mobile"]),
-    ("laika","laikaspaceneighbor", "Laika", "Kudryavka", 0, TEAM_IDS["QA"]),
-    ("simba","ifittouchesthesun", "King", "Simba", 0, None),
-    # Team Lead 
-    ("pomgpriv", "computeroverride", "Private", "Madagascar", 1, TEAM_IDS['Backend']),
+    ("hachi","hachikoko", "Chūken", "Hachikō", 0, TEAM_IDS["Backend"], 'hachikō.png'),
+    ("harambe","rememberharambe", "Harambe", "Van Coppenolle", 0, TEAM_IDS["Mobile"], 'harambe.jpg'),
+    ("laika","laikaspaceneighbor", "Laika", "Kudryavka", 0, TEAM_IDS["QA"], 'laika.jpg'),
+    ("simba","ifittouchesthesun", "Simba", "", 0, None, 'simba.jpg'),
+    ("wolly", "mammmmoth", "Lyuba", "Khudi", 0, None, 'lyuba.jpg'),
+    ("crikey", "saltwatercroc", "Bindi", "Irwin", 0, TEAM_IDS["Frontend"], 'bindi.jpg')
 ]
 
 DEFAULT_ISSUES = [
-    (2, "Probably more winter", "I think I saw the shadow? But I also just woke up it could've been a hibernation dust build-up", [2, 5]),
+    (2, "Probably more winter", "I think I saw the shadow? But I also just woke up it could've been a hibernation dust build-up"),
     (2, "Pennsylvanian top hats", "Where can I accquire one?"),
-    (4, "飼い主はまだ帰っていないの？", "彼がお菓子を持ってきてくれるといいな"),
-    (5, "Zoo transfer request", "This place is too hot"),
-    (6, "Вкусы мороженого «Астронавт»", "будут ли другие вкусы, кроме шоколада?")
+    (5, "飼い主はまだ帰っていないの？", "彼がお菓子を持ってきてくれるといいな"),
+    (6, "Zoo transfer request", "This place is too hot"),
+    (7, "Вкусы мороженого «Астронавт»", "будут ли другие вкусы, кроме шоколада?")
 ]
 
 
@@ -95,13 +104,16 @@ def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
 
-def create_user(username, password, first_name, last_name, admin_level, team=None):
+def create_user(username, password, first_name, last_name, admin_level, team=None, pfp_filename=None):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
-        'INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id)' 
-        ' VALUES (?, ?, ?, ?, ?, ?)',
-        (username, generate_password_hash(password), first_name, last_name, admin_level, TEAM_IDS["Admin"] if admin_level == 2 else team)
+        'INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id, pfp_filename)' 
+        ' VALUES (?, ?, ?, ?, ?, ?, ?)',
+        (username, generate_password_hash(password), first_name, last_name, admin_level, 
+         TEAM_IDS["Admin"] if admin_level == 2 else team,
+         'pfp/' + (pfp_filename if pfp_filename else random.choice(DEFAULT_PFPS))
+        )
     )
     cursor.close()
     db.commit()

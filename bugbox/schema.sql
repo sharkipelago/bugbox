@@ -13,6 +13,7 @@ CREATE TABLE user (
 	last_name TEXT NOT NULL,
 	admin_level INTEGER NOT NULL CHECK (admin_level BETWEEN 0 AND 2),
 	team_id INTEGER,
+	pfp_filename TEXT NOT NULL, -- which default pfp to use, if not set then it has a custom pfp in static
 	FOREIGN KEY (team_id) REFERENCES team (id)
 );
 

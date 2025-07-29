@@ -2,6 +2,12 @@
 {% from 'bootstrap5/utils.html' import render_messages %}
 {% from 'bootstrap5/utils.html' import render_icon %}
 
+{% macro pfp(filename) -%}
+  <a>
+    <img src="{{url_for('static', filename=filename)}}" alt="pfp" width="30" height="30" class="rounded-circle me-2">
+  </a>
+{% endmacro %}
+
 {% macro teamBadge(team_id) -%}
   {% if TEAMS[team_id] == 'Admin' %}
     <span class="badge text-dark shadow-sm text-bg-{{TEAMS[team_id]|lower}}">{{TEAMS[team_id]}}</span>
@@ -14,13 +20,13 @@
   {% if TEAMS[team_id] == 'Admin' %}
     <span class="badge text-dark shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
       {{TEAMS[team_id]}} 
-      <a href="{{href}}"">
-        <i class="bi bi-x text-dark   list-group-item-action"></i></a>  
+      <a href="{{href}}">
+        <i class="bi bi-x text-dark list-group-item-action"></i></a>  
     </span>
   {% else %}
     <span class="badge text-light shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
       {{TEAMS[team_id]}} 
-      <a href="{{href}}"">
+      <a href="{{href}}">
         <i class="bi bi-x text-light list-group-item-action"></i></a>  
     </span>  {% endif %}
 {% endmacro %}
@@ -115,24 +121,6 @@
 						</li>
 					</ul>
 					<hr>
-					<!-- <div class="dropdown pb-4">
-						<a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-							<img src="https://github.com/mdo.png" alt="hugenerd" width="30" height="30" class="rounded-circle">
-							<span class="d-none d-sm-inline mx-1">{{g.user.first_name}}</span>
-						</a>
-						<ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-							<li><a class="dropdown-item" href="#">New project...</a></li>
-							<li><a class="dropdown-item" href="#">Settings</a></li>
-							<li><a class="dropdown-item" href="#">Profile</a></li>
-							<li>
-								<hr class="dropdown-divider">
-							</li>
-							<li>							
-                  <a class="dropdown-item" href="#"  data-bs-toggle="modal"="modal" data-bs-target="#logoutModal">
-                      <i class="bi-box-arrow-right"></i> Logout</a>		
-							</li>
-						</ul>
-					</div> -->
 				</div>
 			</div>			 
 			<!-- End of Desktop Sidebar -->
@@ -167,7 +155,7 @@
               {% endif %}  
             </div>
             <a href="#" class="d-flex align-items-center text-primary text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="https://github.com/mdo.png" alt="hugenerd" width="30" height="30" class="rounded-circle">
+              <img src="{{url_for('static', filename=g.user['pfp_filename'])}}" alt="pfp" width="30" height="30" class="rounded-circle me-2">
               <span class="d-none d-sm-inline mx-1">{{g.user.first_name}}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow dropdown-menu-end">

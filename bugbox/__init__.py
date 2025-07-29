@@ -3,6 +3,7 @@ from flask import Flask, render_template
 from flask_bootstrap import Bootstrap5
 
 from bugbox.team import TEAMS, TEAM_IDS
+from bugbox.db import get_user
 
 def create_app(test_config=None):
     # create and configure the app
@@ -27,7 +28,7 @@ def create_app(test_config=None):
 
     # pass teams object to every template
     def inject_data():
-        return dict(TEAMS=TEAMS, TEAM_IDS=TEAM_IDS)
+        return dict(TEAMS=TEAMS, TEAM_IDS=TEAM_IDS, get_user=get_user)
     app.context_processor(inject_data)
 
 

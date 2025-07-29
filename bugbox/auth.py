@@ -3,7 +3,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, sessi
 from werkzeug.security import check_password_hash, generate_password_hash
 from wtforms import Form, StringField, PasswordField, SubmitField, validators
 
-from bugbox.db import get_db, get_issue_teams, get_user
+from bugbox.db import get_db, get_issue_teams, get_user, create_user
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -48,12 +48,7 @@ def register():
             error = 'Passwords do not match'
         if error is None:
             try:
-                # By default new registered users will join team unassigned
-                db.execute(
-                    "INSERT INTO user (username, [password], first_name, last_name, admin_level, team_id) VALUES (?, ?, ?, ?, ?, ?)",
-                    (username, generate_password_hash(password), first_name, last_name, 0, None),
-                )
-                db.commit()
+                create_user(username, password, first_name, last_name, 0)
                 flash('Thanks for registering!', 'success')
             except db.IntegrityError:
                 error = f"User {username} is already registered."

@@ -24,7 +24,10 @@
           <tbody>
             {% for user in users %}
               <tr>
-                <td>{{user["first_name"]}} {{user["last_name"]}}</td>
+                <td>
+                  {{pfp(filename=user['pfp_filename'])}}
+                  {{user["first_name"]}} {{user["last_name"]}}
+                </td>
                 <td>
                   {% if user['id'] == g.user.id %}
                     <span class="badge text-dark text-bg-self shadow-sm">Self</span>
