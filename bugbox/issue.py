@@ -3,7 +3,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from werkzeug.exceptions import abort
 
 from bugbox.auth import login_required, team_lead_required, same_team_required, admin_required
-from bugbox.db import get_db, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team, delete_assignment
+from bugbox.db import get_db, get_all_issues, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team, delete_assignment
 
 bp = Blueprint('issue', __name__)
 
@@ -67,16 +67,9 @@ def get_assignments():
 @login_required
 def index(progress=0):
     assert progress == 0 or progress == 1 or progress == 2
-    db = get_db()
-    issues = db.execute(
-        'SELECT *, (first_name || " " || last_name) AS author_name'
-        ' FROM issue i'
-        ' JOIN user u ON i.author_id = u.id'
-        ' ORDER BY created DESC'
-    ).fetchall()
-
     return render_template('issue/index.html', 
-                           issues=issues, assignments=get_assignments(), 
+                           issues=get_all_issues(), 
+                           assignments=get_assignments(), 
                            issue_teams=get_issue_teams(), 
                            team_names=get_team_names(),
                            progress=progress

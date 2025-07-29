@@ -136,14 +136,31 @@
 					</button>
 
 					<!-- Topbar Search -->
-					<form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 ms-4">
-						<div class="input-group">
-							<input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-								aria-label="Search">	
-							<button class="btn btn-primary" type="button">
-								<i class="bi-search"></i>
-							</button>
-						</div>
+					<form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 ms-3 col-7 position-relative">
+            <div class="input-group">
+              <input id='search-input' type="text" class="form-control bg-light border-2 small rounded-left" placeholder="Search for issue..."
+                aria-label="Search" >	
+              <div id="magnify-icon" class="btn btn-primary pe-none" >
+                <i class="bi-search"></i>
+              </div>
+            </div>
+            <div id="issue-list" class="z-3 list-group position-absolute w-100 ">
+              {% for issue in all_issues() %}
+                <a href="{{url_for('issue.details', issue_id=issue['id'])}}" 
+                  class="bg-off-white border-primary list-group-item text-nowrap overflow-hidden" style="display: none; text-overflow: ellipsis;">
+                  <span class="fst-italic">#{{issue['id']}}</span> 
+                  {% if issue['progress'] == 0 %} 
+                    <i class="bi bi-clipboard"></i>
+                  {% elif issue['progress'] == 1 %}
+                    <i class="bi bi-clipboard-pulse"></i>
+                  {% elif issue['progress'] == 2 %}
+                    <i class="bi bi-clipboard-check"></i>
+                  {% endif %}
+                  {{issue['title']}} 
+                </a>
+              {% endfor %}
+            </div>
+
 					</form>
 
           <!-- Topbar profile -->
@@ -220,5 +237,6 @@
 			</div>
 		</div>
 		{{ bootstrap.load_js() }}
-	</body>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+  </body>
 </html>

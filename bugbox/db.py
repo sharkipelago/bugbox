@@ -284,3 +284,11 @@ def update_admin_level(user_id, admin_level, cursor=None):
         ' WHERE id = ?',
         (admin_level, user_id)
     )
+
+def get_all_issues():
+    return get_db().execute(
+        'SELECT *, (first_name || " " || last_name) AS author_name'
+        ' FROM issue i'
+        ' JOIN user u ON i.author_id = u.id'
+        ' ORDER BY created DESC'
+    ).fetchall()
