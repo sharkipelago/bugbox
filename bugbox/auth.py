@@ -132,7 +132,6 @@ def login_required(view):
         return view(**kwargs)
     return login_wrapped_view
 
-# # TODO move this to an admin.py
 def team_lead_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):

@@ -3,7 +3,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, url_f
 from werkzeug.exceptions import abort
 
 from bugbox.auth import login_required, team_lead_required, same_team_required, admin_required
-from bugbox.db import get_db, get_all_issues, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team, delete_assignment
+from bugbox.db import get_db, get_all_issues, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team, delete_assignment, insert_status_update
 
 bp = Blueprint('issue', __name__)
 
@@ -12,7 +12,6 @@ DEAFULT_ADMIN_STATE = {
     'teams': [],
     'assignees': []
 }
-admin_create_state = 2
 
 def get_subordinate_users():
     subordinate_users = None
@@ -75,23 +74,15 @@ def index(progress=0):
                            progress=progress
                            )
 
-# TODO When admin creates issue can manually assign teams
-# TODO when team lead creates issue, can choose to assign other teams besides own team
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
-    global admin_create_state
 
     if request.method == 'POST':
         print(request.form)
         title = request.form['title']
         description = request.form['desc']
         initial_assignees = [int(k.split('-')[-1]) for k in request.form.keys() if k.startswith('assignee')]
-        if g.user['admin_level'] == 0:
-            initial_assignees = [g.user['id']] 
-        initial_teams = None
-        if g.user['admin_level'] == 2:
-            initial_teams = list(set([get_user(i_a)['team_id'] for i_a in initial_assignees]))
         error = None
 
         if not title:
@@ -100,8 +91,7 @@ def create():
         if error is not None:
             flash(error)
         else:
-            create_issue(g.user['id'], title, description, initial_assignees, initial_teams)
-            # admin_create_state.clear()
+            create_issue(g.user['id'], title, description, initial_assignees)
             return redirect(url_for('issue.index'))
 
     return render_template('issue/create.html', assignable_users=get_subordinate_users())
@@ -212,9 +202,7 @@ def remove_assignee(issue_id, user_id):
 @contribute_perms_required
 def submit_issue(issue_id, submitter_id):
     update_issue_progress(issue_id, 1)
-    submitter = get_user(submitter_id)
-    status_update_content = f'{submitter['first_name']} {submitter['last_name']} submitted this issue for review'
-    insert_comment(-1, issue_id, status_update_content)
+    insert_status_update(submitter_id, issue_id, 1)
     return redirect(url_for('issue.index',  progress=1))
 
 @bp.route('/<int:issue_id>/<int:closer_id>/close-issue', methods=('POST',))
@@ -222,9 +210,7 @@ def submit_issue(issue_id, submitter_id):
 @modify_perms_required
 def close_issue(issue_id, closer_id):
     update_issue_progress(issue_id, 2)
-    closer = get_user(closer_id)
-    status_update_content = f'{closer['first_name']} {closer['last_name']} closed this issue'
-    insert_comment(-1, issue_id, status_update_content)
+    insert_status_update(closer_id, issue_id, 2)
     return redirect(url_for('issue.index', progress=2))
 
 @bp.route('/<int:issue_id>/<int:reopener_id>/reopen-issue', methods=('POST',))
@@ -232,12 +218,9 @@ def close_issue(issue_id, closer_id):
 @modify_perms_required
 def reopen_issue(issue_id, reopener_id):
     update_issue_progress(issue_id, 0)
-    reopener = get_user(reopener_id)
-    status_update_content = f'{reopener['first_name']} {reopener['last_name']} reopened this issue'
-    insert_comment(-1, issue_id, status_update_content)
+    insert_status_update(reopener_id, issue_id, 2)
     return redirect(url_for('issue.index', progress=0))
 
-# TODO Make a modal pop up warning about removing all assignees
 @bp.route('/<int:issue_id>/<int:team_id>/remove-issue-team')
 @login_required
 @team_lead_required
