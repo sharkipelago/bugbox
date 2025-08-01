@@ -16,23 +16,27 @@
   {% endif %}
 {% endmacro %}
 
-{% macro removableTeamBadge(team_id, href) -%}
-  {% if TEAMS[team_id] == 'Admin' %}
-    <span class="badge text-dark shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
-      {{TEAMS[team_id]}} 
-      <a href="{{href}}">
-        <i class="bi bi-x text-dark list-group-item-action"></i></a>  
-    </span>
-  {% else %}
-    <span class="badge text-light shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
-      {{TEAMS[team_id]}} 
-      <a href="{{href}}">
-        <i class="bi bi-x text-light list-group-item-action"></i></a>  
-    </span>  {% endif %}
+{% macro teamLeadBadge() %}
+  <span class="badge text-dark text-bg-team-lead shadow-sm">Team Lead</span>
 {% endmacro %}
 
-{% macro teamLeadBadge() -%}
-  <span class="badge text-dark text-bg-team-lead shadow-sm">Team Lead</span>
+{% macro confirmModal(id, title, body, confirmStyle, confirmText, confirmEndpoint=none) %}
+  {% set url = url_for(confirmEndpoint) if confirmEndpoint else "#" %}
+  <div class="modal fade" id="{{id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">{{title}}</h5>
+        </div>
+        <div class="modal-body">{{body}}</div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+          <a id="{{id}}Confirm" class="btn btn-{{confirmStyle}}" href="{{url}}">{{confirmText}}</a>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endmacro %}
 
 <!doctype html>
@@ -177,8 +181,8 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow dropdown-menu-end">
               <li>							
-                <a class="dropdown-item" href="#"  data-bs-toggle="modal"="modal" data-bs-target="#logoutModal">
-                    <i class="bi-box-arrow-right"></i> Logout</a>		
+                <a class="dropdown-item" href="#"  data-bs-toggle="modal" data-bs-target="#logoutModal">
+                  <i class="bi-box-arrow-right"></i> Logout</a>		
               </li>
             </ul>
           </div>
@@ -215,28 +219,17 @@
 		</div>
 		<!-- End of Page Wrapper -->
 
-		<!-- Scroll to Top Button-->
-		<a class="scroll-to-top rounded" href="#page-top">
-			<i class="fas fa-angle-up"></i>
-		</a>
-
 		<!-- Logout Modal-->
-		<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-			aria-hidden="true">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-					</div>
-					<div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-					<div class="modal-footer">
-						<button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-						<a class="btn btn-primary" href="{{url_for('auth.logout')}}">Logout</a>
-					</div>
-				</div>
-			</div>
-		</div>
+    {{confirmModal(id='logoutModal', title='Ready to leave?', body='Select "Logout" below if you are ready to end your current session.',
+      confirmEndpoint='auth.logout', confirmStyle='primary', confirmText='Logout' 
+    )}}
+
+    {% block modal %}
+    {% endblock %}
+
 		{{ bootstrap.load_js() }}
+    {% block script %}
+    {% endblock %}
     <script src="{{ url_for('static', filename='index.js') }}"></script>
   </body>
 </html>

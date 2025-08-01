@@ -26,6 +26,23 @@
   <input class="btn btn-danger me-auto" type="submit" value="Delete Issue" form="delete-form" onclick="return confirm('Are you sure?');">
 {% endmacro %}
 
+{% macro removableTeamBadge(team_id) %}
+  {% if TEAMS[team_id] == 'Admin' %}
+    <span class="badge text-dark shadow-sm text-bg-{{TEAMS[team_id]|lower}}">
+      {{TEAMS[team_id]}} 
+      <a href="{{url_for('issue.remove_issue_team', issue_id=issue['id'], team_id=team_id)}}">
+        <i class="bi bi-x text-dark list-group-item-action"></i></a>  
+    </span>
+  {% else %}
+    <span class="badge text-light shadow-sm text-bg-{{TEAMS[team_id]|lower}} removable-team-badge" 
+      data-url="{{url_for('issue.remove_issue_team', issue_id=issue['id'], team_id=team_id)}}" 
+      data-team-name="{{TEAMS[team_id]}}" data-bs-toggle="modal" data-bs-target="#removeIssueTeamModal">
+      {{TEAMS[team_id]}} 
+      <a href="#">
+        <i class="bi bi-x text-light list-group-item-action"></i></a>  
+    </span>  {% endif %}
+{% endmacro %}
+
 {% block title %}Edit "{{ issue['title'] }}" {% endblock %}
 
 {% block content %}
@@ -39,7 +56,7 @@
       <p class="fs-6">
         {% for team_id in issue_teams %} 
           {% if issue['progress'] < 2 and (team_id == g.user['team_id'] and g.user['admin_level'] == 1 or g.user['admin_level'] == 2) %}
-            {{removableTeamBadge(team_id, url_for('issue.remove_issue_team', issue_id=issue['id'], team_id=team_id))}}
+            {{removableTeamBadge(team_id)}}
           {% else %}
             {{teamBadge(team_id)}}           
           {% endif %}
@@ -169,4 +186,28 @@
     </div>
   </div>
 {% endblock %}
+
+{% block modal %}
+  {{confirmModal(id='removeIssueTeamModal', title='', body='Removing a team from this issue will also unassign any users from this team.',
+    confirmEndpoint='', confirmStyle='danger', confirmText='Remove Team' 
+  )}}
+
+{% endblock %}
   
+{% block script %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modalTriggerButtons = document.getElementsByClassName('removable-team-badge');
+    const modal = document.getElementById('removeIssueTeamModal');
+    for (let i=0; i < modalTriggerButtons.length; i++) {
+      modalTriggerButtons[i].addEventListener('click', function() {
+        let button = modalTriggerButtons[i];
+        let url = button.getAttribute('data-url');
+        modal.querySelector('.modal-title').textContent = `Remove Team: "${button.getAttribute('data-team-name')}" from issue?`
+        modal.querySelector('#removeIssueTeamModalConfirm').href = url;
+      });
+    }
+  });
+</script>
+
+{% endblock %}
