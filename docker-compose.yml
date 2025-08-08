@@ -1,0 +1,17 @@
+services:
+  # flask-app:
+  #   image: python:3.13-slim
+
+  database:
+    image: mysql:latest
+    environment: 
+      MYSQL_ROOT_PASSWORD: bass
+      MYSQL_DATABASE: bugbox
+    volumes:
+      - ./db-init/:/docker-entrypoint-initdb.d 
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+
+  

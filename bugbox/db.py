@@ -139,6 +139,17 @@ def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
 
+
+def get_user(user_id):
+    return get_db().execute(
+        'SELECT *'
+        ' FROM user u'
+        ' WHERE u.id = ?',
+        (user_id,)
+    ).fetchone()  
+
+
+
 def create_user(username, password, first_name, last_name, admin_level, team=None, pfp_filename=None):
     db = get_db()
     cursor = db.cursor()
@@ -164,7 +175,10 @@ def create_issue(author_id, title, initial_comment, assignee_ids = []):
     issue_id = cursor.lastrowid
 
     initial_assignees = assignee_ids if assignee_ids else [author_id]
+    print("USER2============", get_user(2).keys())
+    print("==================SETTY=========", [get_user(i_a).keys() for i_a in initial_assignees])
     for t_id in set([get_user(i_a)['team_id'] for i_a in initial_assignees]):
+        print("TEAMIDDD:", t_id)
         insert_issue_team(issue_id, t_id)
 
     insert_comment(author_id, issue_id, initial_comment, cursor)
@@ -173,14 +187,6 @@ def create_issue(author_id, title, initial_comment, assignee_ids = []):
     cursor.close()
     db.commit()   
     return issue_id
-
-def get_user(user_id):
-    return get_db().execute(
-        'SELECT *'
-        ' FROM user u'
-        ' WHERE u.id = ?',
-        (user_id,)
-    ).fetchone()  
 
 def get_users(team_id = None):
     if team_id:

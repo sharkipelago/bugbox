@@ -1,24 +1,24 @@
-DROP TABLE IF EXISTS user;
-DROP TABLE IF EXISTS issue;
-DROP TABLE IF EXISTS comment;
-DROP TABLE IF EXISTS assignment;
-DROP TABLE IF EXISTS team;
-DROP TABLE IF EXISTS issue_team;
+USE bugbox;
+
+CREATE TABLE team (
+	id INTEGER PRIMARY KEY,
+	team_name VARCHAR(255)
+);
 
 CREATE TABLE user (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	username TEXT UNIQUE NOT NULL,
-	[password] TEXT NOT NULL,
-	first_name TEXT NOT NULL,
-	last_name TEXT NOT NULL,
+	id INTEGER PRIMARY KEY AUTO_INCREMENT,
+	username VARCHAR(255) UNIQUE NOT NULL,
+	`password` VARCHAR(255) NOT NULL,
+	first_name VARCHAR(255) NOT NULL,
+	last_name VARCHAR(255) NOT NULL,
 	admin_level INTEGER NOT NULL CHECK (admin_level BETWEEN 0 AND 2),
 	team_id INTEGER,
-	pfp_filename TEXT NOT NULL, -- which default pfp to use, if not set then it has a custom pfp in static
+	pfp_filename VARCHAR(255) NOT NULL, -- which default pfp to use, if not set then it has a custom pfp in static
 	FOREIGN KEY (team_id) REFERENCES team (id)
 );
 
 CREATE TABLE issue (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	progress INT NOT NULL DEFAULT 0 CHECK (progress BETWEEN 0 AND 2),  -- 0 is created, 1 is under review, 2 is closed
 	author_id INTEGER NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE issue (
 );
 
 CREATE TABLE comment (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	author_id INTEGER NOT NULL,
 	issue_id INTEGER,
@@ -37,7 +37,7 @@ CREATE TABLE comment (
 );
 
 CREATE TABLE assignment (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	issue_id INTEGER NOT NULL,
 	assignee_id INTEGER NOT NULL,
 	CONSTRAINT issue_assignee_constraint UNIQUE (issue_id, assignee_id),
@@ -45,13 +45,9 @@ CREATE TABLE assignment (
 	FOREIGN KEY (assignee_id) REFERENCES user (id)
 );
 
-CREATE TABLE team (
-	id INTEGER PRIMARY KEY,
-	team_name TEXT
-);
 
 CREATE TABLE issue_team (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	issue_id INTEGER NOT NULL,
 	team_id INTEGER NOT NULL,
 	CONSTRAINT issue_team UNIQUE (issue_id, team_id),
