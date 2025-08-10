@@ -1,14 +1,39 @@
-import sqlite3
 from datetime import datetime
 from collections import defaultdict
 import functools, random
+import os
+
 
 from werkzeug.security import generate_password_hash
-
-import click
 from flask import current_app, g
 
+from sqlalchemy import create_engine, Table, select
+from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import MetaData
+
 from bugbox.team import TEAM_IDS
+
+DB_USER = os.getenv("MYSQL_USER")
+DB_HOST = os.getenv("MYSQL_HOST")
+DB_PASSWORD = os.getenv("MYSQL_PASSWORD")
+DB_NAME = os.getenv("MYSQL_DB") 
+
+engine = create_engine(f"mysql+mysqldb://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:3306/{DB_NAME}")
+try:
+    with engine.connect() as connection:
+        print("Successfully connected to the MySQL database!")
+except Exception as e:
+    print(f"Error connecting to the database: {e}")
+
+# db_session = scoped_session(sessionmaker(autocommit=False,
+#                                          autoflush=False,
+#                                          bind=engine))
+
+metadata_obj = MetaData()
+user_table = Table("user", metadata_obj, autoload_with=engine)
+
+
 DEFAULT_STATUS_UPDATE_SUBMIT = -1
 DEFAULT_STATUS_UPDATE_CLOSE = -2
 
@@ -42,17 +67,25 @@ def get_db():
     return g.db
 
 
+
 def close_db(e=None):
     db = g.pop('db', None)
 
     if db is not None:
         db.close()
 
-sqlite3.register_converter(
-    "timestamp", lambda v: datetime.fromisoformat(v.decode())
-)
+# sqlite3.register_converter(
+#     "timestamp", lambda v: datetime.fromisoformat(v.decode())
+# )
 
 def init_app(app):
+    print("===PRINTING TEST SELECT===")
+    stmt = select(user_table).where(user_table.c.first_name == "Private")
+    with engine.connect() as conn:
+        for row in conn.execute(stmt):
+            print(row)
+    print("===ENDING TEST SELECT===")
+
     app.teardown_appcontext(close_db)
 
 

@@ -1,16 +1,34 @@
 services:
-  # flask-app:
-  #   image: python:3.13-slim
+  web:
+    container_name: flask-app
+    build: ./app
+    ports:
+    - '5000:5000'
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: database
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+      MYSQL_DB: bugbox
 
-  database:
+  database: 
+    container_name: mysql-db
     image: mysql:latest
     environment: 
-      MYSQL_ROOT_PASSWORD: bass
+      MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: bugbox
     volumes:
       - ./db-init/:/docker-entrypoint-initdb.d 
+      # make an actual db_data folder in project?
       - db_data:/var/lib/mysql
-
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root --password=$$MYSQL_PASSWORD
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 55
 volumes:
   db_data:
 
