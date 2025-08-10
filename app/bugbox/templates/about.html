@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<p>Hi, thanks for checking out the <a class="fst-italic" href="https://github.com/sharkipelago/bugbox">Bugbox</a>. This is an issue/bug tracking application.</p>
+<p>The site is currently set up to simulate a software development project with five different sub-teams. Users can create issues, communicate with team members and submit issues to Team Leads for review. </p>
+<p>By default, all newly registered users are regular users that are not assigned to any sub-team. If you would like to view the app from the perspective of a Site Admin or Team Lead, click on one of the “login with x” links on the login page.</p>
+<p>The following are features for each privilege level:</p>
+<h6 class="fw-bold">Regular User</h6>
+<ul>
+  <li>Create new issues (by default Regular Users assign themselves to any issues created)</li>
+  <li>Comment on assigned issues </li>
+  <li>Submit assigned issues for review </li>
+</ul>
+<h6 class="fw-bold">Team Lead</h6>
+<ul>
+  <li>Everything a Regular User can do </li>
+  <li>Add/remove their team label from an issue </li>
+  <li>Claim users that do not belong to any sub-team </li>
+  <li>Remove users from their team </li>
+  <li>Assign members of their team to an issue</li>
+  <li>Delete issues with their team label</li>
+  <li>Review submitted issues with their team label</li>
+</ul>
+<h6 class="fw-bold">Site Admin</h6>
+<ul>
+  <li>Everything a Team Lead can do across all sub-teams</li>
+  <li>Promote a Regular User to Team Lead</li>
+  <li>Demote a Team Lead to Regular User</li>
+  <li>Switch the team of any user (this will have no impact on currently assigned issues, even if the user is no longer part of any teams that the issue is assigned to)</li>
+</ul>
+
+<h6>Other Notes</h6>
+<ul>
+  <li>Dockerize</li>
+  <li>setup better db login on docker (don't put password in env variable make a local file?)</li>
+  <li>Update status updates to have author _id but special content code</li>
+  <li>Unassigning TeamLead -> Demoting Modal</li>
+  <li>Unassigned users cannot make issues</li>
+  <li>Unassigned user testing</li>
+  <li>inspect on issue.index</li>
+  <li>mobile </li>
+</ul>
+{% endblock %}

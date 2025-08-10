@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Collaborators{% endblock %}
+
+{% block content %}
+
+  <!-- DataTales Example -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h6 class="m-0 font-weight-bold text-primary">Collaborators</h6>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table" id="dataTable" width="100%" cellspacing="0">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Team</th>
+              {% if g.user['admin_level'] > 0 %}
+                <th class="text-center">Actions</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for user in users %}
+              <tr>
+                <td>
+                  {{pfp(filename=user['pfp_filename'])}}
+                  {{user["first_name"]}} {{user["last_name"]}}
+                </td>
+                <td>
+                  {% if user['id'] == g.user.id %}
+                    <span class="badge text-dark text-bg-self shadow-sm">Self</span>
+                  {% endif %}
+                  {% if user['team_id'] is none %}
+                    <span class="badge text-light text-bg-secondary shadow-sm">Unassigned</span>
+                  {% endif %}
+                  {{teamBadge(user['team_id'])}}
+                  {% if user["admin_level"] == 1 %}
+                    {{teamLeadBadge()}}
+                  {% endif %}  
+                </td>
+                {% if g.user['admin_level'] == 1 %}
+                  <td>
+                    {% if user['team_id'] is none %}
+                      <a href="{{ url_for('collab.assign_team', user_id=user['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
+                        <i class="bi bi-diamond-fill"></i>
+                        Claim for team: {{TEAMS[g.user['team_id']]}} 
+                      </a>
+                    {% endif %}
+                    {% if user['team_id'] == g.user['team_id'] and user['id'] != g.user['id'] %}
+                      <a href="{{ url_for('collab.remove_from_team', user_id=user['id'], team_id=g.user['team_id']) }}" class="text-decoration-none text-secondary">
+                        <i class="bi bi-x"></i>
+                        Remove from team
+                      </a>
+                    {% endif %}
+                  </td>
+                {% elif g.user['admin_level'] == 2 %}
+                  <td>
+                    <div class="d-flex text-secondary justify-content-evenly">
+                      {% if user['admin_level'] != 2 %}
+                        <div class="dropdown">
+                            <a href="#" class="text-decoration-none text-secondary " 
+                              role="button" data-bs-toggle="dropdown" aria-expanded="false">             
+                              {% if user['team_id'] is none %} 
+                                <i class="bi bi-diamond-fill"></i> Assign team
+                              {% else %}
+                                <i class="bi bi-arrow-left-right"></i> Change team
+                              {% endif %} 
+                            </a>
+                          <ul class="dropdown-menu dropdown-menu-end" style="min-width: 5px;">
+                            {% for team in TEAMS | reject('equalto', 'Admin') | reject('equalto', TEAMS[user['team_id']]) |list %}
+                              <li>
+                                <a class="dropdown-item" href="{{ url_for('collab.assign_team', user_id=user['id'], team_id=TEAM_IDS[team]) }}">
+                                  {{teamBadge(TEAM_IDS[team])}}
+                                </a>
+                              </li>
+                            {% endfor %}
+                            {% if user['team_id'] is not none %}
+                              <li>
+                                <a class="dropdown-item" href="{{ url_for('collab.remove_from_team', user_id=user['id'], team_id=user['team_id']) }}">
+                                  <span class="badge text-light text-bg-secondary shadow-sm">Unassigned</span>
+                                </a>
+                              </li>
+                            {% endif %}
+                          </ul>
+                        </div>
+                        <div>
+                          {% if user['admin_level'] == 0 %}
+                            <a class="dropdown-item" href="{{ url_for('collab.change_admin_level', user_id=user['id'], new_admin_level=1) }}">
+                              <i class="bi bi-chevron-double-up"></i> Promote
+                            </a>
+                          {% elif user['admin_level'] == 1 %}
+                            <a class="dropdown-item" href="{{ url_for('collab.change_admin_level', user_id=user['id'], new_admin_level=0) }}">
+                              <i class="bi bi-chevron-double-down"></i> Demote
+                            </a>
+                          {% endif %}
+                        </div>
+                      {% endif %}
+                    </div>
+
+
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+

@@ -1,0 +1,22 @@
+{% extends 'auth/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<h1 class="h3 my-4">Welcome Back!</h1>
+<form method="post">
+	{{ render_field(form.username, form_type='inline') }}
+	{{ render_field(form.password, form_type='inline') }}
+	{{ render_field(form.submit) }}
+</form>
+<hr>
+<a class="small" href="forgot-password">Forgot Password?</a>
+<br>
+<a class="small" href="register">Create an Account!</a>
+<br>
+<a class="small" href="admin-login">Login under admin account</a>
+<br>
+<a class="small" href="team-lead-login">Login under team lead account</a>
+<br>
+<a class="small" href="guest-login">Login under guest account</a>
+{% endblock content %}
