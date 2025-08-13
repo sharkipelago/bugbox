@@ -24,9 +24,9 @@ DB_NAME = getenv("MYSQL_DB")
 engine = create_engine(f"mysql+mysqldb://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:3306/{DB_NAME}?charset=utf8mb4")
 try:
     with engine.connect() as connection:
-        print("Successfully connected to the MySQL database!")
+        print("Successfully connected to the MySQL database!", flush=True)
 except Exception as e:
-    print(f"Error connecting to the database: {e}")
+    print(f"Error connecting to the database: {e}", flush=True)
 
 class Base(DeclarativeBase):
     pass
