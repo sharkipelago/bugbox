@@ -15,7 +15,6 @@ DEAFULT_ADMIN_STATE = {
 def get_subordinate_users():
     subordinate_users = None
     if g.user.admin_level == 1:
-        print("====USER1 BEBEING EXECUTED:===", g.user.admin_level, flush=True)
         subordinate_users = get_users(g.user.team_id)
     elif g.user.admin_level == 2:
         subordinate_users = get_users()
@@ -58,7 +57,6 @@ def contribute_perms_required(view):
 @bp.route('/<int:progress>/')
 @login_required
 def index(progress=0):
-    print("===@Index====")
     assert progress == 0 or progress == 1 or progress == 2
     return render_template('issue/index.html', 
                            issues=get_all_issues(), 
@@ -71,9 +69,7 @@ def index(progress=0):
 @bp.route('/create', methods=('GET', 'POST'))
 @login_required
 def create():
-
     if request.method == 'POST':
-        print(request.form)
         title = request.form['title']
         description = request.form['desc']
         initial_assignees = [int(k.split('-')[-1]) for k in request.form.keys() if k.startswith('assignee')]

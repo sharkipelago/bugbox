@@ -2,19 +2,11 @@
 
 {% macro issueComponent(issues) -%}
   {% for issue in issues %} 
-    <a class="action text-decoration-none text-primary" href="{{ url_for('issue.details', issue_id=issue['id']) }}" >
+    <a class="action text-decoration-none text-primary" href="{{ url_for('issue.details', issue_id=issue.id) }}" >
       {% for team_id in issue_teams[issue.id] %} {{teamBadge(team_id)}} {% endfor %}
-      <p class="mb-0 fs-5 text-nowrap overflow-hidden" style="text-overflow: ellipsis;">{{ issue['title'] }} </p >
-      <span class="small">#{{issue.id}} - {{ issue.author.first_name }} {{issue.author.last_name}} opened on {{ issue['created'].strftime('%B %d, %H:%M') }}</span>
+      <p class="mb-0 fs-5 text-nowrap overflow-hidden" style="text-overflow: ellipsis;">{{ issue.title }} </p >
+      <span class="small">#{{issue.id}} - {{ issue.author.first_name }} {{issue.author.last_name}} opened on {{ issue.created.strftime('%B %d, %H:%M') }}</span>
     </a> 
-    <!-- <div>
-      Assigned to: 
-      {% for a in assignments %}
-        {% if issue['id'] == a['issue_id'] %}
-         {{ a['assignee_name']}} 
-        {% endif %} 
-      {% endfor %}
-    </div> -->
     {% if not loop.last %}
       <hr>
     {% endif %}

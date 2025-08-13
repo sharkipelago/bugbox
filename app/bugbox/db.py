@@ -122,7 +122,7 @@ def get_team_names():
     return team_names
 
 # USERS
-def create_user(username, password, first_name, last_name, admin_level, team=None, pfp_filename=None):
+def create_user(username, password, first_name, last_name, admin_level, team=TEAM_IDS["Frontend"], pfp_filename=None):
     u = User(
         username=username, 
         password=generate_password_hash(password), 
@@ -150,11 +150,13 @@ def get_user_by_username(username):
 @dml_operation
 def update_user_team(user_id, team_id):
     user = get_db_session().get(User, user_id)
+    assert user.admin_level == 0 or team_id # Makes sure you don't set a team lead or admin to unassiagned team
     user.team_id = team_id
 
 @dml_operation
 def update_admin_level(user_id, admin_level):
     user = get_db_session().get(User, user_id)
+    assert admin_level == 0 or user.team_id # Makes sure you don't set a team lead or admin to unassiagned team
     user.admin_level = admin_level
 
 # ISSUES

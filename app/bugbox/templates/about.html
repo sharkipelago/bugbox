@@ -31,15 +31,7 @@
   <li>Switch the team of any user (this will have no impact on currently assigned issues, even if the user is no longer part of any teams that the issue is assigned to)</li>
 </ul>
 
-<h6>Other Notes</h6>
-<ul>
-  <li>Dockerize</li>
-  <li>setup better db login on docker (don't put password in env variable make a local file?)</li>
-  <li>Update status updates to have author _id but special content code</li>
-  <li>Unassigning TeamLead -> Demoting Modal</li>
-  <li>Unassigned users cannot make issues</li>
-  <li>Unassigned user testing</li>
-  <li>inspect on issue.index</li>
-  <li>mobile </li>
-</ul>
+<h6 class="fw-bold">**Other Notes</h6>
+<p>Unassigned users can not create issues or contribute to any issues. This means if a newly registered user was unassigned by default in order to test the websites features they would have to log into the admin account and assign their account a team. Thus all new users are automatically assigned to the Frontend team</p>
+
 {% endblock %}

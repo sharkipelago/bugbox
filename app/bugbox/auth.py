@@ -70,8 +70,6 @@ def login():
         if user is None:
             error = 'Username not found'
         elif not check_password_hash(user.password, password):
-            print(password)
-            print(user.password, flush=True)
             error = 'Incorrect password'
 
         if error is None:
