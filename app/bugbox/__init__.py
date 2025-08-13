@@ -2,7 +2,6 @@ import os
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap5
 
-# TODO update teams to grab from data
 from bugbox.team import TEAMS, TEAM_IDS
 from bugbox.db import get_user, get_all_issues
 
@@ -10,8 +9,7 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'bugbox.sqlite'),
+        SECRET_KEY='24a728c5ec252a0d345845dce36e48e7d18bd32e7a10274b6118abac76b5ca6c',
     )
 
     if test_config is None:
