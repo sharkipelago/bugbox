@@ -1,5 +1,7 @@
 from pypika import MySQLQuery, Table
 from werkzeug.security import generate_password_hash
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
 
 DEFAULT_TEAMS = [
     "Admin",
@@ -19,7 +21,7 @@ DEFAULT_USERS = [
     # Team Lead
     ("puxp", generate_password_hash("punxsutawney"), "Phil", "Punxsutawney", 1, TEAM_IDS["Mobile"], 'pfp/punxsutawney.jpg'),
     ("simba", generate_password_hash("ifittouchesthesun"), "Simba", "", 1, TEAM_IDS['DevOps'], 'pfp/simba.jpg'),
-    ("hachi", generate_password_hash("hachikoko"), "Chūken", "Hachikō", 1, TEAM_IDS["Backend"], 'pfp/hachikō.png'),
+    ("hachi", generate_password_hash("hachikoko"), "Chuken", "Hachiko", 1, TEAM_IDS["Backend"], 'pfp/hachiko.png'),
     # User
     ("harambe", generate_password_hash("rememberharambe"), "Harambe", "Van Coppenolle", 0, TEAM_IDS["Mobile"], 'pfp/harambe.jpg'),
     ("pomgpriv", generate_password_hash("computeroverride"), "Private", "", 0, TEAM_IDS['Mobile'], 'pfp/private.jpg'),      
@@ -29,7 +31,7 @@ DEFAULT_USERS = [
     ("wolly", generate_password_hash("mammmmoth"), "Lyuba", "Khudi", 0, None, 'pfp/lyuba.jpg'),
 ]
 
-USER_IDS = {u[2]: user_id for user_id, u in enumerate(DEFAULT_USERS)}
+USER_IDS = {u[2]: user_id + 1 for user_id, u in enumerate(DEFAULT_USERS)}
 
 ISSUE_IDS = {
     "Shadow": 1,
@@ -43,14 +45,16 @@ DEFAULT_ISSUES = [
     (ISSUE_IDS["Shadow"], USER_IDS['Phil'], 1, "Shadow Detection"),
     (ISSUE_IDS["ApplePay"], USER_IDS['Phil'], 2, "Apple Pay Vulnerabilities"),
     (ISSUE_IDS["OutbackServers"], USER_IDS['Bindi'], 0,"Outback Servers Bandwidth Consumption"),
-    (ISSUE_IDS["DataLake"], USER_IDS['Chūken'], 0, "Data Lake Migration API Ohana Errors?"),
-    (ISSUE_IDS["Russian"], USER_IDS['Laika'], 0, "Совместимость с космическим пространством"),
+    (ISSUE_IDS["DataLake"], USER_IDS['Chuken'], 0, "Data Lake Migration API Ohana Errors?"),
+    (ISSUE_IDS["Russian"], USER_IDS['Laika'], 0, "Space Compatibility"),
 ]
 
 DEFAULT_ASSIGNMENTS = [
     (ISSUE_IDS["Shadow"], [USER_IDS['Phil'], USER_IDS['Private'], USER_IDS['Harambe']]),
     (ISSUE_IDS["ApplePay"], [USER_IDS['Phil'], USER_IDS['Private']]),
+    (ISSUE_IDS["OutbackServers"], [USER_IDS['Bindi']]),
     (ISSUE_IDS["DataLake"], [USER_IDS['Stitch']]),
+    (ISSUE_IDS["Russian"], [USER_IDS['Laika']]),
 ]
 
 SUBMIT_STATUS_COMMENT = "SUBMIT_STATUS_UPDATE"
@@ -72,12 +76,12 @@ DEFAULT_COMMENTS = [
     (ISSUE_IDS['OutbackServers'], USER_IDS['Bindi'], "Got notice that our outback servers are seeing sudden spikes in bandwidth consumption. I know we started sharing the servers with some local companies, but the impact should not be this drastic."),
     (ISSUE_IDS['OutbackServers'], USER_IDS['Simba'], "Thanks for bringing this up @Bindi. That should not be happening. Make sure that the other organizations are primarily on the HPC clusters; everything the lightweight servers touch is our kingdom."),
     # Data Lake Migration Issue 4
-    (ISSUE_IDS['DataLake'], USER_IDS['Chūken'], "@Stitch A lot of your API pull requests looks like they're adding new features with an Ohana library? As discussed in the planning meeting, because the data lake itself is already using a lot of new tooling, right now we just want to focus migrating from the previous data warehouse. This means our new data lake query APIs should not have any new dependencies that our old APIs did not have. "),
+    (ISSUE_IDS['DataLake'], USER_IDS['Chuken'], "@Stitch A lot of your API pull requests looks like they're adding new features with an Ohana library? As discussed in the planning meeting, because the data lake itself is already using a lot of new tooling, right now we just want to focus migrating from the previous data warehouse. This means our new data lake query APIs should not have any new dependencies that our old APIs did not have. "),
     (ISSUE_IDS['DataLake'], USER_IDS['Stitch'], "Ohana means family and family means Stitch thinks we should use migration as an opportunity to address some inefficiencies of the old data query APIs."),
-    (ISSUE_IDS['DataLake'], USER_IDS['Chūken'], "I completely understand your concern, but right now as a team we're focused on migration, which is taking up a lot of resources and delaying services for our users. Right now, I think it's best if we diligently work towards making sure the migration goes smoothly. Afterwards we can focus on addressing inefficiencies."),
-    (ISSUE_IDS['DataLake'], USER_IDS['Chūken'], "Additionally, an explanation of the Ohana library more comprehensive explanation than “it means family” would be appreciated."),
+    (ISSUE_IDS['DataLake'], USER_IDS['Chuken'], "I completely understand your concern, but right now as a team we're focused on migration, which is taking up a lot of resources and delaying services for our users. Right now, I think it's best if we diligently work towards making sure the migration goes smoothly. Afterwards we can focus on addressing inefficiencies."),
+    (ISSUE_IDS['DataLake'], USER_IDS['Chuken'], 'Additionally, an explanation of the Ohana library more comprehensive than "it means family" would be appreciated.'),
     # Russian Issue 5
-    (ISSUE_IDS['Russian'], USER_IDS['Laika'], "Я тестировал этот продукт в космосе. оно сломалось."),
+    (ISSUE_IDS['Russian'], USER_IDS['Laika'], "I tested this product in space. It broke."),
 ]
 
 DEFAULT_ISSUE_TEAMS = [
