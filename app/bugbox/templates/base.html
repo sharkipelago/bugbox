@@ -170,13 +170,13 @@
           <!-- Topbar profile -->
           <div class="ms-auto dropdown me-4 d-flex">
             <div class="me-2">
-              {{teamBadge(g.user['team_id'])}}
-              {% if g.user["admin_level"] == 1 %}
+              {{teamBadge(g.user.team_id)}}
+              {% if g.user.admin_level == 1 %}
                 {{teamLeadBadge()}}
               {% endif %}  
             </div>
             <a href="#" class="d-flex align-items-center text-primary text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="{{url_for('static', filename=g.user['pfp_filename'])}}" alt="pfp" width="30" height="30" class="rounded-circle me-2">
+              <img src="{{url_for('static', filename=g.user.pfp_filename)}}" alt="pfp" width="30" height="30" class="rounded-circle me-2">
               <span class="d-none d-sm-inline mx-1">{{g.user.first_name}}</span>
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow dropdown-menu-end">

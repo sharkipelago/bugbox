@@ -1,9 +1,8 @@
 import functools
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
-from werkzeug.exceptions import abort
 
 from bugbox.auth import login_required, team_lead_required, same_team_required, admin_required
-from bugbox.db import get_db, get_all_issues, get_user, get_users, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, get_comments, insert_comment, delete_issue_team, insert_issue_team, delete_assignment, insert_status_update
+from bugbox.db import get_issue, get_all_issues, get_user, get_users, get_all_issue_teams, get_issue_teams, get_assignees, get_team_names, create_issue, insert_assignment, update_issue_progress, insert_comment, delete_issue_team, insert_issue_team, delete_assignment, insert_status_update, get_all_assignments, delete_issue
 
 bp = Blueprint('issue', __name__)
 
@@ -15,9 +14,10 @@ DEAFULT_ADMIN_STATE = {
 
 def get_subordinate_users():
     subordinate_users = None
-    if g.user['admin_level'] == 1:
-        subordinate_users = get_users(g.user['team_id'])
-    elif g.user['admin_level'] == 2:
+    if g.user.admin_level == 1:
+        print("====USER1 BEBEING EXECUTED:===", g.user.admin_level, flush=True)
+        subordinate_users = get_users(g.user.team_id)
+    elif g.user.admin_level == 2:
         subordinate_users = get_users()
     return subordinate_users
 
@@ -27,9 +27,9 @@ def get_edit_level(issue_id):
     assignee_ids = [a['id'] for a in get_assignees(issue_id)]
     issue = get_issue(issue_id)
 
-    if g.user['admin_level'] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] in team_ids:
+    if g.user.admin_level == 2 or g.user.admin_level == 1 and g.user.team_id in team_ids:
         return 2
-    elif g.user['id'] in assignee_ids or g.user['id'] == issue['author_id']:
+    elif g.user.id in assignee_ids or g.user.id == issue.author_id:
         return 1
     return 0
     
@@ -54,22 +54,16 @@ def contribute_perms_required(view):
 
     return wrapped_view
 
-
-def get_assignments():
-    return get_db().execute(
-        'SELECT a.id, issue_id, assignee_id, (first_name || " " || last_name) as assignee_name'
-        ' FROM assignment a JOIN user u ON a.assignee_id = u.id'
-    ).fetchall()
-
 @bp.route("/", defaults={"progress": 0})
 @bp.route('/<int:progress>/')
 @login_required
 def index(progress=0):
+    print("===@Index====")
     assert progress == 0 or progress == 1 or progress == 2
     return render_template('issue/index.html', 
                            issues=get_all_issues(), 
-                           assignments=get_assignments(), 
-                           issue_teams=get_issue_teams(), 
+                           assignments=get_all_assignments(), 
+                           issue_teams=get_all_issue_teams(), 
                            team_names=get_team_names(),
                            progress=progress
                            )
@@ -91,28 +85,10 @@ def create():
         if error is not None:
             flash(error)
         else:
-            create_issue(g.user['id'], title, description, initial_assignees)
+            create_issue(g.user.id, title, description, initial_assignees)
             return redirect(url_for('issue.index'))
 
     return render_template('issue/create.html', assignable_users=get_subordinate_users())
-
-
-def get_issue(id):
-    issue = get_db().execute(
-        'SELECT *'
-        ' FROM issue i JOIN user u ON i.author_id = u.id'
-        ' WHERE i.id = ?',
-        (id,)
-    ).fetchone()
-
-    if issue is None:
-        abort(404, f"Post id {id} doesn't exist.")
-
-    # admin_access = issue['team_id'] == g.user['team_id'] and g.user['admin_level'] > 0
-    # if check_author and issue['author_id'] != g.user['id'] and not admin_access:
-    #     abort(403)
-
-    return issue
 
 @bp.route('/<int:issue_id>/details')
 @login_required
@@ -123,7 +99,7 @@ def details(issue_id):
                            assignees=get_assignees(issue_id), 
                            assignable_users=get_subordinate_users(),
                            users=get_users(), 
-                           comments=get_comments(issue_id),
+                           comments=get_issue(issue_id).comments,
                            edit_level=get_edit_level(issue_id)
     )
 
@@ -138,41 +114,38 @@ def add_comment(issue_id):
     if error is not None:
         flash(error)
 
-    insert_comment(g.user['id'], issue_id, content)
+    insert_comment(g.user.id, issue_id, content)
     return redirect(url_for('issue.details', issue_id=issue_id))
 
 
-@bp.route('/<int:issue_id>/update', methods=('POST',))
-@login_required
-@modify_perms_required
-def update(issue_id):
-    title = request.form['title']
-    body = request.form['body']
-    error = None
+# @bp.route('/<int:issue_id>/update', methods=('POST',))
+# @login_required
+# @modify_perms_required
+# def update(issue_id):
+#     title = request.form['title']
+#     body = request.form['body']
+#     error = None
 
-    if not title:
-        error = 'Title is required.'
+#     if not title:
+#         error = 'Title is required.'
 
-    if error is not None:
-        flash(error)
-    else:
-        db = get_db()
-        db.execute(
-            'UPDATE issue SET title = ?, body = ?'
-            ' WHERE id = ?',
-            (title, body, issue_id)
-        )
-        db.commit()
-    return redirect(url_for('issue.details', issue_id=issue_id))
+#     if error is not None:
+#         flash(error)
+#     else:
+#         db = get_db()
+#         db.execute(
+#             'UPDATE issue SET title = ?, body = ?'
+#             ' WHERE id = ?',
+#             (title, body, issue_id)
+#         )
+#         db.commit()
+#     return redirect(url_for('issue.details', issue_id=issue_id))
 
 @bp.route('/<int:issue_id>/delete', methods=('POST',))
 @login_required
 @modify_perms_required
 def delete(issue_id):
-    get_issue(issue_id)
-    db = get_db()
-    db.execute('DELETE FROM issue WHERE id = ?', (issue_id,))
-    db.commit()
+    delete_issue(issue_id)
     return redirect(url_for('issue.index'))
 
 @bp.route('/<int:issue_id>/<int:user_id>/add-assignee', methods=('GET',))
@@ -180,12 +153,8 @@ def delete(issue_id):
 @modify_perms_required
 @same_team_required
 def add_assignee(issue_id, user_id):
-    assert get_user(user_id)['team_id'] in get_issue_teams(issue_id)
-
-    db = get_db()
-    cursor = db.cursor()
-    insert_assignment(cursor, issue_id, user_id)
-    db.commit()
+    assert get_user(user_id).team_id in get_issue_teams(issue_id)
+    insert_assignment(issue_id, user_id)
     return redirect(url_for('issue.details', issue_id=issue_id))
 
 @bp.route('/<int:issue_id>/<int:user_id>/remove-assignee', methods=('GET',))
@@ -193,7 +162,7 @@ def add_assignee(issue_id, user_id):
 @modify_perms_required
 @same_team_required
 def remove_assignee(issue_id, user_id):
-    assert get_user(user_id)['team_id'] in get_issue_teams(issue_id)
+    assert get_user(user_id).team_id in get_issue_teams(issue_id)
     delete_assignment(issue_id, user_id)
     return redirect(url_for('issue.details', issue_id=issue_id))
 

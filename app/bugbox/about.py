@@ -1,9 +1,6 @@
-
-from flask import Blueprint, flash, g, redirect, render_template, request, url_for
-from werkzeug.exceptions import abort
+from flask import Blueprint, render_template
 
 from bugbox.auth import login_required
-from bugbox.db import get_db, get_users
 
 bp = Blueprint('about', __name__, url_prefix='/about')
 

@@ -5,19 +5,19 @@
 {% endmacro %}
 
 {% macro submitForReviewButton(extra_attributes='', button_value='Submit for Review') %}
-  <form id="submit-for-review-form" action="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user['id'])}}" method="post"> 
+  <form id="submit-for-review-form" action="{{ url_for('issue.submit_issue', issue_id=issue['id'], submitter_id=g.user.id)}}" method="post"> 
     <input type="submit" value="{{button_value}}" class="btn btn-secondary me-2" form="submit-for-review-form" {{extra_attributes}}>
   </form>
 {% endmacro %}
 
 {% macro reopenButton() %}
-  <form id="reopen-form" action="{{ url_for('issue.reopen_issue', issue_id=issue['id'], reopener_id=g.user['id'])}}" method="post"> 
+  <form id="reopen-form" action="{{ url_for('issue.reopen_issue', issue_id=issue['id'], reopener_id=g.user.id)}}" method="post"> 
     <input type="submit" value="Reopen Issue" class="btn btn-secondary me-2" form="reopen-form" >
   </form>
 {% endmacro %}
 
 {% macro closeButton() %}
-  <form id="close-form" action="{{ url_for('issue.close_issue', issue_id=issue['id'], closer_id=g.user['id'])}}" method="post"> 
+  <form id="close-form" action="{{ url_for('issue.close_issue', issue_id=issue['id'], closer_id=g.user.id)}}" method="post"> 
     <input type="submit" value="Close Issue" class="btn btn-warning me-2" form="close-form" >
   </form>
 {% endmacro %}
@@ -55,7 +55,7 @@
       <h3 class="mb-0"><span class="fw-bold">{{issue['title']}}</span> #{{issue['id']}}</h3>
       <p class="fs-6">
         {% for team_id in issue_teams %} 
-          {% if issue['progress'] < 2 and (team_id == g.user['team_id'] and g.user['admin_level'] == 1 or g.user['admin_level'] == 2) %}
+          {% if issue['progress'] < 2 and (team_id == g.user.team_id and g.user.admin_level == 1 or g.user.admin_level == 2) %}
             {{removableTeamBadge(team_id)}}
           {% else %}
             {{teamBadge(team_id)}}           
@@ -65,8 +65,8 @@
         {% if issue['progress'] < 2 %}
           {% for team in TEAMS %}
             {% set team_id = TEAM_IDS[team] %}
-            {% if (g.user['admin_level'] == 2 and team_id not in issue_teams) or 
-              (g.user['admin_level'] == 1 and team_id not in issue_teams and g.user['team_id'] == team_id )%}
+            {% if (g.user.admin_level == 2 and team_id not in issue_teams) or 
+              (g.user.admin_level == 1 and team_id not in issue_teams and g.user.team_id == team_id )%}
               <span class="badge shadow-sm border border-secondary">
                 <a href="{{ url_for('issue.add_issue_team', issue_id=issue['id'], team_id=team_id) }}" class="text-decoration-none text-secondary">
                   <i class="bi bi-plus list-group-item-action"></i>
@@ -81,18 +81,27 @@
 
       {% for c in comments %}
       <div class="d-flex">
-        {% if c['author_id'] != -1 %}
+        {% if c.content != SUBMIT_STATUS_CONTENT and c.content != CLOSE_STATUS_CONTENT and c.content != REOPEN_STATUS_CONTENT %}
           {{pfp(filename=get_user(c['author_id'])['pfp_filename'])}}
         {% endif %}
         <div class="card mb-2 flex-grow-1">
-          {% if c['author_id'] == -1 %}
+          {% if c.content == SUBMIT_STATUS_CONTENT or c.content == CLOSE_STATUS_CONTENT or c.content == REOPEN_STATUS_CONTENT %}
             <div class="card-header bg-secondary text-black rounded-bottom">
-              <p class="small mb-0 fst-italic"> {{c['content']}} {{c['created'].strftime('%B %d, %H:%M')}} </p>
+              <p class="small mb-0 fst-italic"> 
+                  {{c.author.first_name}} {{c.author.last_name}}
+                  {% if c.content == REOPEN_STATUS_CONTENT %} 
+                    reopened this issue
+                  {% elif c.content == SUBMIT_STATUS_CONTENT %}
+                    submitted this issue for review
+                  {% else %}
+                    closed this issue
+                  {% endif %}
+                {{c['created'].strftime('%B %d, %H:%M')}} </p>
             </div>
           {% else %}    
             <div class="card-header">
               <p class="small mb-0">   
-                {{c['author_name']}}
+                {{c.author.first_name}} {{c.author.last_name}}
                 {% if loop.first %} 
                   opened on 
                 {% else %}
@@ -102,7 +111,7 @@
               </p>
             </div>
             <div class="card-body">
-              <p class="mb-0">{{c['content']}}</p>
+                <p class="mb-0">{{c['content']}}</p>
             </div>
           {% endif %}
         </div>        
@@ -160,7 +169,7 @@
             <!-- need list because map will return a generator as all jinja functions that oppearte on lists return generators -->
             {% for user in assignable_users | selectattr('team_id', 'in', issue_teams) | rejectattr('id', 'in', assignees|map(attribute='id')|list) %}
               <a class="list-group-item list-group-item-action d-flex" href="{{ url_for('issue.add_assignee', issue_id=issue['id'], user_id=user['id']) }}">
-                {{user['first_name']}} {{user['last_name']}} {% if g.user['admin_level'] == 2 %} <span class="ms-auto ">{{teamBadge(user['team_id'])}} </span>{% endif %}
+                {{user['first_name']}} {{user['last_name']}} {% if g.user.admin_level == 2 %} <span class="ms-auto ">{{teamBadge(user.team_id)}} </span>{% endif %}
               </a>
             {% else %}
               <li class="list-group-item ">No more assignable users</li>
@@ -171,13 +180,13 @@
       <hr>
       <div class="list-group">
         {% for a in assignees %}
-          {% if edit_level == 2 and issue['progress'] < 2 and (a['team_id'] == g.user['team_id'] or g.user['admin_level'] == 2) %}
+          {% if edit_level == 2 and issue['progress'] < 2 and (a.team_id == g.user.team_id or g.user.admin_level == 2) %}
             <a class="list-group-item d-flex " href="{{ url_for('issue.remove_assignee', issue_id=issue['id'], user_id=a['id']) }}">
              <span class="me-auto"> {{ a['name'] }} </span> 
-             <span>{{teamBadge(a['team_id'])}}<i class="bi bi-x list-group-item-action"></i></span> 
+             <span>{{teamBadge(a.team_id)}}<i class="bi bi-x list-group-item-action"></i></span> 
             </a>
           {% else %}
-            <span class="list-group-item d-flex"><span class="me-auto">{{ a['name'] }}</span> {{teamBadge(a['team_id'])}} </span>        
+            <span class="list-group-item d-flex"><span class="me-auto">{{ a['name'] }}</span> {{teamBadge(a.team_id)}} </span>        
           {% endif %}
         {% else %}
             <span>No users currently assigned to this issue</span>

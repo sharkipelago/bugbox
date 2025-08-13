@@ -17,7 +17,7 @@ def index():
 @login_required
 @team_lead_required
 def assign_team(user_id, team_id):
-    assert get_user(user_id)['team_id'] != team_id
+    assert get_user(user_id).team_id != team_id
     update_user_team(user_id, team_id)
     return redirect(url_for('collab.index'))
 
@@ -26,7 +26,7 @@ def assign_team(user_id, team_id):
 @team_lead_required
 @same_team_required
 def remove_from_team(user_id, team_id):
-    assert get_user(user_id)['team_id'] == team_id
+    assert get_user(user_id).team_id == team_id
     update_user_team(user_id, None)
     delete_all_assignments(user_id)
     return redirect(url_for('collab.index'))
@@ -35,7 +35,7 @@ def remove_from_team(user_id, team_id):
 @login_required
 @admin_required
 def change_admin_level(user_id, new_admin_level):
-    assert get_user(user_id)['admin_level'] < 2
-    assert get_user(user_id)['admin_level'] != new_admin_level
+    assert get_user(user_id).admin_level < 2
+    assert get_user(user_id).admin_level != new_admin_level
     update_admin_level(user_id, new_admin_level)
     return redirect(url_for('collab.index'))

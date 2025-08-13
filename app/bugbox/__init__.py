@@ -29,7 +29,15 @@ def create_app(test_config=None):
 
     # pass teams object to every template
     def inject_data():
-        return dict(TEAMS=TEAMS, TEAM_IDS=TEAM_IDS, get_user=get_user, all_issues=get_all_issues)
+        return dict(
+            TEAMS=TEAMS,
+            TEAM_IDS=TEAM_IDS, 
+            get_user=get_user, 
+            all_issues=get_all_issues,
+            SUBMIT_STATUS_CONTENT = 'SUBMIT_STATUS_UPDATE',
+            CLOSE_STATUS_CONTENT = 'CLOSE_STATUS_UPDATE',
+            REOPEN_STATUS_CONTENT = 'REOPEN_STATUS_UPDATE'
+        )
     app.context_processor(inject_data)
 
 

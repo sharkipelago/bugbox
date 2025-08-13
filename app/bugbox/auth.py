@@ -3,7 +3,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, sessi
 from werkzeug.security import check_password_hash, generate_password_hash
 from wtforms import Form, StringField, PasswordField, SubmitField, validators
 
-from bugbox.db import get_db, get_issue_teams, get_user, create_user
+from bugbox.db import get_user, get_user_by_username, create_user
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -31,7 +31,6 @@ def register():
         username = request.form['username']
         password = request.form['password']
         confirm = request.form['confirm']
-        db = get_db()
         error = None
 
         if not first_name or not last_name:
@@ -50,7 +49,7 @@ def register():
             try:
                 create_user(username, password, first_name, last_name, 0)
                 flash('Thanks for registering!', 'success')
-            except db.IntegrityError:
+            except Exception as e:
                 error = f"User {username} is already registered."
             else:
                 return redirect(url_for("auth.login"))
@@ -65,20 +64,19 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        db = get_db()
         error = None
-        user = db.execute(
-            'SELECT * FROM user WHERE username = ?', (username,)
-        ).fetchone()
+        user = get_user_by_username(username)
 
         if user is None:
             error = 'Username not found'
-        elif not check_password_hash(user['password'], password):
+        elif not check_password_hash(user.password, password):
+            print(password)
+            print(user.password, flush=True)
             error = 'Incorrect password'
 
         if error is None:
             session.clear()
-            session['user_id'] = user['id']
+            session['user_id'] = user.id    
             return redirect(url_for('index'))
 
         flash(error)
@@ -115,9 +113,7 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
+        g.user = get_user(user_id)
 
 @bp.route('/logout')
 def logout():
@@ -135,7 +131,7 @@ def login_required(view):
 def team_lead_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user["admin_level"] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] == kwargs.get('team_id'):
+        if g.user.admin_level == 2 or g.user.admin_level == 1 and g.user.team_id == kwargs.get('team_id'):
             return view(**kwargs)
         return redirect(url_for('auth.denied'))
     return wrapped_view
@@ -143,7 +139,7 @@ def team_lead_required(view):
 def same_team_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user["admin_level"] == 2 or g.user['admin_level'] == 1 and g.user['team_id'] == get_user(kwargs.get('user_id'))['team_id']:
+        if g.user.admin_level == 2 or g.user.admin_level == 1 and g.user.team_id == get_user(kwargs.get('user_id')).team_id:
             return view(**kwargs)
         return redirect(url_for('auth.denied'))
     return wrapped_view
@@ -151,7 +147,7 @@ def same_team_required(view):
 def admin_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user["admin_level"] == 2:
+        if g.user.admin_level == 2:
             return view(**kwargs)
         return redirect(url_for('auth.denied'))
     return wrapped_view
